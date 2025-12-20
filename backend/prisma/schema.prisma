@@ -1,0 +1,126 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum PropertyType {
+  Residential
+  Agricultural
+  Commercial
+}
+
+enum PropertyPurpose {
+  Sale
+  Rent
+}
+
+enum PropertyStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum SizeUnit {
+  sq_ft
+  sq_m
+  ropani
+  acre
+}
+
+model User {
+  id        String      @id @default(uuid())
+  name      String
+  email     String      @unique
+  phone     String?
+  password  String
+  role      UserRole    @default(USER)
+  status    UserStatus  @default(ACTIVE)
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+
+  properties      Property[]
+  contactRequests ContactRequest[] @relation("SenderContacts")
+
+  @@map("users")
+}
+
+model Property {
+  id          String          @id @default(uuid())
+  title       String
+  description String          @db.Text
+  propertyType PropertyType   @map("property_type")
+  purpose     PropertyPurpose
+  price       Float
+  landSize    Float           @map("land_size")
+  sizeUnit    SizeUnit        @map("size_unit")
+  status      PropertyStatus  @default(PENDING)
+  isActive    Boolean         @default(true) @map("is_active")
+  ownerId     String          @map("owner_id")
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  owner   User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  images  PropertyImage[]
+  location Location?
+  contactRequests ContactRequest[]
+
+  @@map("properties")
+}
+
+model PropertyImage {
+  id         String   @id @default(uuid())
+  propertyId String   @map("property_id")
+  imageUrl   String   @map("image_url")
+  isPrimary  Boolean  @default(false) @map("is_primary")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("property_images")
+}
+
+model Location {
+  id        String   @id @default(uuid())
+  propertyId String  @unique @map("property_id")
+  address   String
+  city      String
+  state     String?
+  country   String   @default("Nepal")
+  latitude  Float?
+  longitude Float?
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("locations")
+}
+
+model ContactRequest {
+  id        String   @id @default(uuid())
+  propertyId String  @map("property_id")
+  senderId  String   @map("sender_id")
+  message   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  sender   User     @relation("SenderContacts", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@map("contact_requests")
+}
+
