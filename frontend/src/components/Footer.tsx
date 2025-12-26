@@ -1,37 +1,86 @@
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { Home, Mail, Phone } from 'lucide-react';
+
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-white mt-auto">
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div>
-            <h3 className="text-lg font-bold mb-4">PropertyRental</h3>
-            <p className="text-gray-400">
-              Your trusted platform for buying and renting properties in Nepal.
+    <footer className="bg-gradient-to-b from-muted/50 to-background border-t border-border mt-auto">
+      <div className="container mx-auto px-4 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="flex items-center space-x-3 mb-4">
+              <Home className="h-6 w-6 text-primary" />
+              <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                PropertyRental
+              </span>
+            </div>
+            <p className="text-muted-foreground leading-relaxed">
+              Your trusted platform for buying and renting properties in Nepal. Discover your dream property today.
             </p>
-          </div>
-          <div>
-            <h4 className="text-md font-semibold mb-4">Quick Links</h4>
-            <ul className="space-y-2 text-gray-400">
-              <li><a href="/properties" className="hover:text-white">Browse Properties</a></li>
-              <li><a href="/properties/add" className="hover:text-white">List Property</a></li>
-              <li><a href="/dashboard" className="hover:text-white">Dashboard</a></li>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
+            <ul className="space-y-3">
+              <li>
+                <Link to="/properties" className="text-muted-foreground hover:text-primary transition-colors">
+                  Browse Properties
+                </Link>
+              </li>
+              <li>
+                <Link to="/properties/add" className="text-muted-foreground hover:text-primary transition-colors">
+                  List Property
+                </Link>
+              </li>
+              <li>
+                <Link to="/dashboard" className="text-muted-foreground hover:text-primary transition-colors">
+                  Dashboard
+                </Link>
+              </li>
             </ul>
-          </div>
-          <div>
-            <h4 className="text-md font-semibold mb-4">Contact</h4>
-            <p className="text-gray-400">
-              Email: info@propertyrental.com<br />
-              Phone: +977-1-XXXXXXX
-            </p>
-          </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <h4 className="text-lg font-semibold mb-4">Contact</h4>
+            <ul className="space-y-3 text-muted-foreground">
+              <li className="flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                info@propertyrental.com
+              </li>
+              <li className="flex items-center gap-2">
+                <Phone className="h-4 w-4" />
+                +977-1-XXXXXXX
+              </li>
+            </ul>
+          </motion.div>
         </div>
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.3 }}
+          className="border-t border-border mt-12 pt-8 text-center text-muted-foreground"
+        >
           <p>&copy; 2024 PropertyRental. All rights reserved.</p>
-        </div>
+        </motion.div>
       </div>
     </footer>
   );
 };
 
 export default Footer;
-

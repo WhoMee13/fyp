@@ -3,11 +3,13 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { useAuth } from '../context/AuthContext';
+import { UserPlus } from 'lucide-react';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -44,84 +46,128 @@ const Register = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-16 flex items-center justify-center min-h-[calc(100vh-200px)]">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Register</CardTitle>
-          <CardDescription>Create a new account to get started</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div>
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="John Doe"
-                {...register('name')}
-              />
-              {errors.name && (
-                <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
-              )}
-            </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/20 to-background py-16 px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-md"
+      >
+        <Card className="border-2 shadow-2xl">
+          <CardHeader className="text-center space-y-2 pb-6">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring" }}
+              className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4"
+            >
+              <UserPlus className="h-8 w-8 text-primary" />
+            </motion.div>
+            <CardTitle className="text-3xl font-bold">Create Account</CardTitle>
+            <CardDescription className="text-base">
+              Join us to start listing your properties
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <Label htmlFor="name" className="text-base font-medium">Full Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="John Doe"
+                  className="h-12 mt-2 border-2"
+                  {...register('name')}
+                />
+                {errors.name && (
+                  <p className="text-sm text-destructive mt-1">{errors.name.message}</p>
+                )}
+              </motion.div>
 
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                {...register('email')}
-              />
-              {errors.email && (
-                <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
-              )}
-            </div>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <Label htmlFor="email" className="text-base font-medium">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="your@email.com"
+                  className="h-12 mt-2 border-2"
+                  {...register('email')}
+                />
+                {errors.email && (
+                  <p className="text-sm text-destructive mt-1">{errors.email.message}</p>
+                )}
+              </motion.div>
 
-            <div>
-              <Label htmlFor="phone">Phone (Optional)</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="+977-XXXXXXXXX"
-                {...register('phone')}
-              />
-              {errors.phone && (
-                <p className="text-sm text-red-500 mt-1">{errors.phone.message}</p>
-              )}
-            </div>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <Label htmlFor="phone" className="text-base font-medium">Phone (Optional)</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="+977-XXXXXXXXX"
+                  className="h-12 mt-2 border-2"
+                  {...register('phone')}
+                />
+              </motion.div>
 
-            <div>
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                {...register('password')}
-              />
-              {errors.password && (
-                <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
-              )}
-            </div>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.6 }}
+              >
+                <Label htmlFor="password" className="text-base font-medium">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  className="h-12 mt-2 border-2"
+                  {...register('password')}
+                />
+                {errors.password && (
+                  <p className="text-sm text-destructive mt-1">{errors.password.message}</p>
+                )}
+              </motion.div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Registering...' : 'Register'}
-            </Button>
-          </form>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.7 }}
+              >
+                <Button type="submit" className="w-full h-12 text-lg font-semibold" disabled={loading}>
+                  {loading ? 'Registering...' : 'Register'}
+                </Button>
+              </motion.div>
+            </form>
 
-          <div className="mt-4 text-center text-sm">
-            <p className="text-gray-600">
-              Already have an account?{' '}
-              <Link to="/login" className="text-primary hover:underline">
-                Login here
-              </Link>
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8 }}
+              className="mt-6 text-center text-sm"
+            >
+              <p className="text-muted-foreground">
+                Already have an account?{' '}
+                <Link to="/login" className="text-primary font-semibold hover:underline">
+                  Login here
+                </Link>
+              </p>
+            </motion.div>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 };
 
 export default Register;
-
