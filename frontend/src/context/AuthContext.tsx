@@ -9,6 +9,7 @@ interface User {
   phone?: string;
   role: 'USER' | 'ADMIN';
   status: 'ACTIVE' | 'INACTIVE';
+  createdAt: string;
 }
 
 interface AuthContextType {

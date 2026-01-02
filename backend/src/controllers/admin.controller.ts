@@ -60,7 +60,7 @@ export const getDashboardStats = async (req: AuthRequest, res: Response) => {
 
 export const getAllUsers = async (req: AuthRequest, res: Response) => {
   try {
-    const { page = '1', limit = '20', status, role } = req.query;
+    const { page = '1', limit = '20', status, role, search } = req.query;
 
     const pageNum = parseInt(page as string);
     const limitNum = parseInt(limit as string);
@@ -69,6 +69,12 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
     const where: any = {};
     if (status) where.status = status;
     if (role) where.role = role;
+    if (search) {
+      where.OR = [
+        { name: { contains: search as string } },
+        { email: { contains: search as string } }
+      ];
+    }
 
     const [users, total] = await Promise.all([
       prisma.user.findMany({
@@ -139,7 +145,7 @@ export const updateUserStatus = async (req: AuthRequest, res: Response) => {
 
 export const getAllProperties = async (req: AuthRequest, res: Response) => {
   try {
-    const { page = '1', limit = '20', status } = req.query;
+    const { page = '1', limit = '20', status, search } = req.query;
 
     const pageNum = parseInt(page as string);
     const limitNum = parseInt(limit as string);
@@ -147,6 +153,20 @@ export const getAllProperties = async (req: AuthRequest, res: Response) => {
 
     const where: any = {};
     if (status) where.status = status;
+    if (search) {
+      where.OR = [
+        { title: { contains: search as string } },
+        { description: { contains: search as string } },
+        { owner: { 
+            name: { contains: search as string }
+          }
+        },
+        { location: {
+            city: { contains: search as string }
+          }
+        }
+      ];
+    }
 
     const [properties, total] = await Promise.all([
       prisma.property.findMany({

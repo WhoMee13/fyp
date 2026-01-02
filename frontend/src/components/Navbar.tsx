@@ -37,28 +37,37 @@ const Navbar = () => {
           </Link>
 
           <div className="hidden lg:flex items-center space-x-8">
-            <Link
-              to="/properties"
-              className="text-foreground/80 hover:text-primary transition-colors font-medium relative group"
-            >
-              Properties
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
-            </Link>
+            {/* Hide Properties link from admin users */}
+            {!isAdmin && (
+              <Link
+                to="/properties"
+                className="text-foreground/80 hover:text-primary transition-colors font-medium relative group"
+              >
+                Properties
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
+              </Link>
+            )}
 
             {isAuthenticated ? (
               <>
-                <Link
-                  to="/dashboard"
-                  className="text-foreground/80 hover:text-primary transition-colors font-medium relative group"
-                >
-                  Dashboard
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
-                </Link>
-                <Link to="/properties/add">
-                  <Button size="sm" className="font-semibold">
-                    Add Property
-                  </Button>
-                </Link>
+                {/* Hide Dashboard link from admin users */}
+                {!isAdmin && (
+                  <Link
+                    to="/dashboard"
+                    className="text-foreground/80 hover:text-primary transition-colors font-medium relative group"
+                  >
+                    Dashboard
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
+                  </Link>
+                )}
+                {/* Hide Add Property link from admin users */}
+                {!isAdmin && (
+                  <Link to="/properties/add">
+                    <Button size="sm" className="font-semibold">
+                      Add Property
+                    </Button>
+                  </Link>
+                )}
                 {isAdmin && (
                   <Link
                     to="/admin"
@@ -70,7 +79,7 @@ const Navbar = () => {
                 )}
                 <div className="flex items-center gap-3">
                   <Link
-                    to="/profile"
+                    to={isAdmin ? "/admin/profile" : "/profile"}
                     className="text-foreground/80 hover:text-primary transition-colors font-medium flex items-center gap-2"
                   >
                     <User className="h-4 w-4" />
@@ -116,29 +125,38 @@ const Navbar = () => {
             exit={{ opacity: 0, height: 0 }}
             className="lg:hidden py-4 space-y-4 border-t border-border"
           >
-            <Link
-              to="/properties"
-              className="block py-2 text-foreground/80 hover:text-primary transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Properties
-            </Link>
+            {/* Hide Properties link from admin users */}
+            {!isAdmin && (
+              <Link
+                to="/properties"
+                className="block py-2 text-foreground/80 hover:text-primary transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Properties
+              </Link>
+            )}
             {isAuthenticated && (
               <>
-                <Link
-                  to="/dashboard"
-                  className="block py-2 text-foreground/80 hover:text-primary transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  to="/properties/add"
-                  className="block py-2 text-foreground/80 hover:text-primary transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Add Property
-                </Link>
+                {/* Hide Dashboard link from admin users */}
+                {!isAdmin && (
+                  <Link
+                    to="/dashboard"
+                    className="block py-2 text-foreground/80 hover:text-primary transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                )}
+                {/* Hide Add Property link from admin users */}
+                {!isAdmin && (
+                  <Link
+                    to="/properties/add"
+                    className="block py-2 text-foreground/80 hover:text-primary transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Add Property
+                  </Link>
+                )}
                 {isAdmin && (
                   <Link
                     to="/admin"
@@ -149,7 +167,7 @@ const Navbar = () => {
                   </Link>
                 )}
                 <Link
-                  to="/profile"
+                  to={isAdmin ? "/admin/profile" : "/profile"}
                   className="block py-2 text-foreground/80 hover:text-primary transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >

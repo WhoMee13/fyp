@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import Home from './pages/Home';
@@ -13,22 +13,33 @@ import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminProperties from './pages/AdminProperties';
 import AdminUsers from './pages/AdminUsers';
+import AdminProfile from './pages/AdminProfile';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import Layout from './components/Layout';
+import AdminLayout from './components/AdminLayout';
 
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
+          {/* Public routes */}
           <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
+            <Route 
+              index 
+              element={
+                <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute>
+              } 
+            />
             <Route path="properties" element={<Properties />} />
             <Route path="properties/:id" element={<PropertyDetail />} />
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
             
+            {/* Protected user routes */}
             <Route
               path="dashboard"
               element={
@@ -61,9 +72,12 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            
+          </Route>
+
+          {/* Admin routes with separate layout */}
+          <Route path="/admin" element={<AdminLayout />}>
             <Route
-              path="admin"
+              index
               element={
                 <AdminRoute>
                   <AdminDashboard />
@@ -71,7 +85,7 @@ function App() {
               }
             />
             <Route
-              path="admin/properties"
+              path="properties"
               element={
                 <AdminRoute>
                   <AdminProperties />
@@ -79,10 +93,18 @@ function App() {
               }
             />
             <Route
-              path="admin/users"
+              path="users"
               element={
                 <AdminRoute>
                   <AdminUsers />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="profile"
+              element={
+                <AdminRoute>
+                  <AdminProfile />
                 </AdminRoute>
               }
             />
