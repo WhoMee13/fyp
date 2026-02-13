@@ -7,7 +7,8 @@ import {
   updateProperty,
   deleteProperty,
   getUserProperties,
-  contactOwner
+  contactOwner,
+  getNearbyProperties
 } from '../controllers/property.controller';
 import { authenticate } from '../middleware/auth.middleware';
 import { uploadMultiple } from '../config/multer.config';
@@ -27,6 +28,17 @@ router.get(
     query('maxPrice').optional().isFloat({ min: 0 })
   ],
   getProperties
+);
+
+router.get(
+  '/nearby',
+  [
+    query('lat').exists().isFloat().withMessage('lat is required and must be a number'),
+    query('lng').exists().isFloat().withMessage('lng is required and must be a number'),
+    query('radiusKm').optional().isFloat({ min: 1 }).withMessage('radiusKm must be a positive number'),
+    query('limit').optional().isInt({ min: 1, max: 50 }).withMessage('limit must be between 1 and 50')
+  ],
+  getNearbyProperties
 );
 
 router.get('/:id', getPropertyById);

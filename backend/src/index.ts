@@ -8,6 +8,7 @@ import authRoutes from './routes/auth.routes';
 import propertyRoutes from './routes/property.routes';
 import userRoutes from './routes/user.routes';
 import adminRoutes from './routes/admin.routes';
+import geoRoutes from './routes/geo.routes';
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/properties', propertyRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/geo', geoRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

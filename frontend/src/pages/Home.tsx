@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '../components/ui/button';
@@ -6,13 +6,49 @@ import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Search, MapPin, ArrowRight } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/card';
+import { useLocationContext } from '../context/LocationContext';
+import api from '../lib/api';
+
+interface NearbyProperty {
+  id: string;
+  title: string;
+  price: number;
+  landSize: number;
+  sizeUnit: string;
+  purpose: string;
+  images: Array<{ imageUrl: string }>;
+  location: { city: string } | null;
+  distanceKm?: number | null;
+}
 
 const Home = () => {
   const navigate = useNavigate();
+  const { coords, locationEnabled, requesting, requestLocation } = useLocationContext();
   const [searchData, setSearchData] = useState({
     city: '',
     purpose: '',
   });
+  const [recommended, setRecommended] = useState<NearbyProperty[]>([]);
+
+  useEffect(() => {
+    const loadRecommended = async () => {
+      if (!coords) return;
+      try {
+        const response = await api.get('/properties/nearby', {
+          params: {
+            lat: coords.lat,
+            lng: coords.lng,
+            radiusKm: 15,
+            limit: 6,
+          },
+        });
+        setRecommended(response.data.properties || []);
+      } catch (e) {
+        // fail silently for recommendations
+      }
+    };
+    loadRecommended();
+  }, [coords]);
 
   const handleSearch = () => {
     const params = new URLSearchParams();
@@ -143,6 +179,89 @@ const Home = () => {
             />
           </div>
         </motion.div>
+      </section>
+
+      {/* Enable Location / Recommended Section */}
+      <section className="py-12 bg-background">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="flex flex-col md:flex-row items-center justify-between gap-6 p-6 rounded-2xl border-2 bg-muted/40"
+          >
+            <div>
+              <h3 className="text-2xl font-semibold mb-2">Find properties near you</h3>
+              <p className="text-muted-foreground">
+                Enable location to see recommended properties based on your current position.
+              </p>
+            </div>
+            <Button
+              size="lg"
+              onClick={requestLocation}
+              disabled={requesting}
+              className="min-w-[220px]"
+            >
+              {requesting ? 'Requesting location...' : locationEnabled ? 'Refresh Nearby Properties' : 'Enable Location'}
+            </Button>
+          </motion.div>
+
+          {locationEnabled && recommended.length > 0 && (
+            <div className="mt-10">
+              <motion.h2
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+                className="text-3xl font-bold mb-6"
+              >
+                Recommended for you
+              </motion.h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {recommended.map((property, index) => (
+                  <motion.div
+                    key={property.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: index * 0.05 }}
+                    whileHover={{ y: -6, scale: 1.01 }}
+                    onClick={() => navigate(`/properties/${property.id}`)}
+                    className="cursor-pointer"
+                  >
+                    <Card className="overflow-hidden border-2 hover:border-primary transition-all duration-300 h-full">
+                      <div className="aspect-video bg-gray-200 overflow-hidden">
+                        {property.images && property.images.length > 0 ? (
+                          <img
+                            src={`http://localhost:5000${property.images[0].imageUrl}`}
+                            alt={property.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gradient-to-br from-muted to-muted/50">
+                            No Image
+                          </div>
+                        )}
+                      </div>
+                      <CardContent className="p-4 space-y-2">
+                        <h3 className="font-semibold text-lg line-clamp-1">{property.title}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {property.location?.city || 'N/A'} • {property.purpose}
+                        </p>
+                        {property.distanceKm != null && (
+                          <p className="text-xs text-muted-foreground">
+                            ~{property.distanceKm.toFixed(1)} km away
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </section>
 
       {/* Popular Locations */}

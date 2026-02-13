@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
+import { LocationProvider } from './context/LocationContext';
 import Home from './pages/Home';
 import Properties from './pages/Properties';
 import PropertyDetail from './pages/PropertyDetail';
@@ -18,12 +19,14 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import Layout from './components/Layout';
 import AdminLayout from './components/AdminLayout';
+import FindOnMap from './pages/FindOnMap';
 
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
+      <LocationProvider>
+        <Router>
+          <Routes>
           {/* Public routes */}
           <Route path="/" element={<Layout />}>
             <Route 
@@ -36,6 +39,7 @@ function App() {
             />
             <Route path="properties" element={<Properties />} />
             <Route path="properties/:id" element={<PropertyDetail />} />
+            <Route path="find" element={<FindOnMap />} />
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
             
@@ -109,8 +113,9 @@ function App() {
               }
             />
           </Route>
-        </Routes>
-      </Router>
+          </Routes>
+        </Router>
+      </LocationProvider>
       <Toaster position="top-right" />
     </AuthProvider>
   );

@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L, { LatLngExpression } from 'leaflet';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -27,8 +29,8 @@ const propertySchema = z.object({
   city: z.string().min(2, 'City is required'),
   state: z.string().optional(),
   country: z.string().default('Nepal'),
-  latitude: z.string().optional(),
-  longitude: z.string().optional(),
+  latitude: z.string().min(1, 'Location is required (select on map)'),
+  longitude: z.string().min(1, 'Location is required (select on map)'),
 });
 
 type PropertyFormData = z.infer<typeof propertySchema>;
@@ -37,6 +39,20 @@ const AddProperty = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+
+  const defaultCenter: LatLngExpression = useMemo(() => [27.7172, 85.3240], []); // Kathmandu
+
+  const markerIcon = useMemo(
+    () =>
+      L.icon({
+        iconUrl:
+          'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+      }),
+    []
+  );
 
   const {
     register,
@@ -48,8 +64,55 @@ const AddProperty = () => {
     resolver: zodResolver(propertySchema),
     defaultValues: {
       country: 'Nepal',
+      latitude: '',
+      longitude: '',
     },
   });
+
+  const latitude = watch('latitude');
+  const longitude = watch('longitude');
+
+  const position: LatLngExpression | undefined =
+    latitude && longitude ? [parseFloat(latitude), parseFloat(longitude)] : undefined;
+
+  const LocationMarker = () => {
+    useMapEvents({
+      async click(e) {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+        setValue('latitude', lat.toString(), { shouldValidate: true });
+        setValue('longitude', lng.toString(), { shouldValidate: true });
+
+        try {
+          const response = await api.get('/geo/reverse', {
+            params: {
+              lat,
+              lng,
+            },
+          });
+          const loc = response.data.location;
+          if (loc) {
+            if (loc.address) {
+              setValue('address', loc.address, { shouldValidate: false });
+            }
+            if (loc.city) {
+              setValue('city', loc.city, { shouldValidate: false });
+            }
+            if (loc.state) {
+              setValue('state', loc.state, { shouldValidate: false });
+            }
+            if (loc.country) {
+              setValue('country', loc.country, { shouldValidate: false });
+            }
+          }
+        } catch {
+          // silently ignore reverse geocode failure
+        }
+      },
+    });
+
+    return position ? <Marker position={position} icon={markerIcon} /> : null;
+  };
 
   const onSubmit = async (data: PropertyFormData) => {
     if (images.length === 0) {
@@ -97,19 +160,21 @@ const AddProperty = () => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
       setImages(files);
+      const previews = files.map((file) => URL.createObjectURL(file));
+      setImagePreviews(previews);
     }
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Card className="max-w-4xl mx-auto">
+    <div className="container mx-auto px-4 py-12">
+      <Card className="max-w-5xl mx-auto border-2 shadow-xl">
         <CardHeader>
-          <CardTitle>Add New Property</CardTitle>
-          <CardDescription>Fill in the details to list your property</CardDescription>
+          <CardTitle className="text-3xl">Add New Property</CardTitle>
+          <CardDescription>Fill in the details and select location on the map</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="title">Title *</Label>
                 <Input id="title" {...register('title')} placeholder="Beautiful land for sale" />
@@ -143,7 +208,7 @@ const AddProperty = () => {
               {errors.description && <p className="text-sm text-red-500 mt-1">{errors.description.message}</p>}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="purpose">Purpose *</Label>
                 <Select onValueChange={(value) => setValue('purpose', value as any)}>
@@ -165,7 +230,7 @@ const AddProperty = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="landSize">Land Size *</Label>
                 <Input id="landSize" type="number" step="0.01" {...register('landSize')} placeholder="1000" />
@@ -195,7 +260,7 @@ const AddProperty = () => {
               {errors.address && <p className="text-sm text-red-500 mt-1">{errors.address.message}</p>}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="city">City *</Label>
                 <Input id="city" {...register('city')} placeholder="Kathmandu" />
@@ -208,19 +273,57 @@ const AddProperty = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="latitude">Latitude (Optional)</Label>
-                <Input id="latitude" type="number" step="0.000001" {...register('latitude')} placeholder="27.7172" />
+            <div className="space-y-3">
+              <Label className="font-semibold">Location *</Label>
+              <p className="text-sm text-muted-foreground">
+                Click on the map to set the property location. This will store precise coordinates for better search.
+              </p>
+              <div className="h-[320px] rounded-xl overflow-hidden border-2">
+                <MapContainer
+                  center={position || defaultCenter}
+                  zoom={12}
+                  scrollWheelZoom={true}
+                  className="w-full h-full"
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  <LocationMarker />
+                </MapContainer>
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="latitude">Latitude *</Label>
+                  <Input
+                    id="latitude"
+                    type="number"
+                    step="0.000001"
+                    {...register('latitude')}
+                    placeholder="27.7172"
+                  />
+                  {errors.latitude && (
+                    <p className="text-sm text-red-500 mt-1">{errors.latitude.message}</p>
+                  )}
+                </div>
 
-              <div>
-                <Label htmlFor="longitude">Longitude (Optional)</Label>
-                <Input id="longitude" type="number" step="0.000001" {...register('longitude')} placeholder="85.3240" />
+                <div>
+                  <Label htmlFor="longitude">Longitude *</Label>
+                  <Input
+                    id="longitude"
+                    type="number"
+                    step="0.000001"
+                    {...register('longitude')}
+                    placeholder="85.3240"
+                  />
+                  {errors.longitude && (
+                    <p className="text-sm text-red-500 mt-1">{errors.longitude.message}</p>
+                  )}
+                </div>
               </div>
             </div>
 
-            <div>
+            <div className="space-y-3">
               <Label htmlFor="images">Images * (At least 1, max 10)</Label>
               <Input
                 id="images"
@@ -230,7 +333,19 @@ const AddProperty = () => {
                 onChange={handleImageChange}
               />
               {images.length > 0 && (
-                <p className="text-sm text-gray-600 mt-2">{images.length} image(s) selected</p>
+                <>
+                  <p className="text-sm text-gray-600 mt-2">{images.length} image(s) selected</p>
+                  <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {imagePreviews.map((src, idx) => (
+                      <div
+                        key={idx}
+                        className="aspect-video rounded-lg overflow-hidden border bg-muted/50 flex items-center justify-center"
+                      >
+                        <img src={src} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
               {images.length === 0 && (
                 <p className="text-sm text-red-500 mt-1">Please select at least one image</p>

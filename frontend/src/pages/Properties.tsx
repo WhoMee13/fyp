@@ -98,7 +98,6 @@ const PropertyCard = ({ property, index }: { property: Property; index: number }
               {property.landSize} {formatSizeUnit(property.sizeUnit)}
             </div>
             <div className="flex items-center font-bold text-primary text-xl">
-              <DollarSign className="h-5 w-5 mr-1" />
               {formatPrice(property.price)}
             </div>
           </CardContent>

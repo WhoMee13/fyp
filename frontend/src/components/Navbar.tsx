@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { Button } from './ui/button';
-import { Home, LogIn, LogOut, User, Shield, Menu, X } from 'lucide-react';
+import { Home, LogIn, LogOut, User, Shield, Menu, X, MapPin } from 'lucide-react';
 import { useState } from 'react';
 
 const Navbar = () => {
@@ -45,6 +45,15 @@ const Navbar = () => {
               >
                 Properties
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
+              </Link>
+            )}
+            {!isAdmin && (
+              <Link
+                to="/find"
+                className="text-foreground/80 hover:text-primary transition-colors font-medium flex items-center gap-1"
+              >
+                <MapPin className="h-4 w-4" />
+                Map Search
               </Link>
             )}
 
@@ -127,13 +136,22 @@ const Navbar = () => {
           >
             {/* Hide Properties link from admin users */}
             {!isAdmin && (
-              <Link
-                to="/properties"
-                className="block py-2 text-foreground/80 hover:text-primary transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Properties
-              </Link>
+              <>
+                <Link
+                  to="/properties"
+                  className="block py-2 text-foreground/80 hover:text-primary transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Properties
+                </Link>
+                <Link
+                  to="/find"
+                  className="block py-2 text-foreground/80 hover:text-primary transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Map Search
+                </Link>
+              </>
             )}
             {isAuthenticated && (
               <>

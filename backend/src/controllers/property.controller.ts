@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { validationResult } from 'express-validator';
-import path from 'path';
 import { AuthRequest } from '../middleware/auth.middleware';
 
 const prisma = new PrismaClient();
+const DEFAULT_RADIUS_KM = parseFloat(process.env.NEARBY_RADIUS_KM || '15');
 
 export const getProperties = async (req: Request, res: Response) => {
   try {
@@ -158,6 +158,10 @@ export const createProperty = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'At least one image is required' });
     }
 
+    if (!latitude || !longitude) {
+      return res.status(400).json({ error: 'Latitude and longitude are required for property location' });
+    }
+
     const property = await prisma.property.create({
       data: {
         title,
@@ -180,8 +184,8 @@ export const createProperty = async (req: AuthRequest, res: Response) => {
             city,
             state: state || null,
             country: country || 'Nepal',
-            latitude: latitude ? parseFloat(latitude) : null,
-            longitude: longitude ? parseFloat(longitude) : null
+            latitude: parseFloat(latitude),
+            longitude: parseFloat(longitude)
           }
         }
       },
@@ -379,6 +383,95 @@ export const contactOwner = async (req: AuthRequest, res: Response) => {
     });
   } catch (error: any) {
     console.error('Contact owner error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getNearbyProperties = async (req: Request, res: Response) => {
+  try {
+    const { lat, lng, radiusKm, limit } = req.query;
+
+    if (!lat || !lng) {
+      return res.status(400).json({ error: 'lat and lng query parameters are required' });
+    }
+
+    const latitude = parseFloat(lat as string);
+    const longitude = parseFloat(lng as string);
+
+    if (Number.isNaN(latitude) || Number.isNaN(longitude)) {
+      return res.status(400).json({ error: 'lat and lng must be valid numbers' });
+    }
+
+    const radius = radiusKm ? parseFloat(radiusKm as string) : DEFAULT_RADIUS_KM;
+    const resultLimit = limit ? parseInt(limit as string, 10) : 20;
+
+    // Haversine-based distance query in kilometers (Earth radius ~ 6371km)
+    const rows = await prisma.$queryRaw<
+      { id: string; distance: number }[]
+    >`
+      SELECT
+        p.id AS id,
+        (6371 * acos(
+          cos(radians(${latitude})) * cos(radians(l.latitude)) *
+          cos(radians(l.longitude) - radians(${longitude})) +
+          sin(radians(${latitude})) * sin(radians(l.latitude))
+        )) AS distance
+      FROM properties p
+      INNER JOIN locations l ON l.property_id = p.id
+      WHERE
+        p.status = 'APPROVED'
+        AND p.is_active = 1
+        AND l.latitude IS NOT NULL
+        AND l.longitude IS NOT NULL
+      HAVING distance <= ${radius}
+      ORDER BY distance ASC
+      LIMIT ${resultLimit};
+    `;
+
+    if (!rows.length) {
+      return res.json({ properties: [] });
+    }
+
+    const idToDistance = new Map<string, number>();
+    const ids = rows.map((row) => {
+      idToDistance.set(row.id, row.distance);
+      return row.id;
+    });
+
+    const properties = await prisma.property.findMany({
+      where: { id: { in: ids } },
+      include: {
+        images: {
+          where: { isPrimary: true },
+          take: 1
+        },
+        location: true,
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true
+          }
+        }
+      }
+    });
+
+    // Order properties according to distance
+    const ordered = properties
+      .map((p) => ({
+        ...p,
+        distanceKm: idToDistance.get(p.id) ?? null
+      }))
+      .sort((a, b) => {
+        if (a.distanceKm == null) return 1;
+        if (b.distanceKm == null) return -1;
+        return a.distanceKm - b.distanceKm;
+      });
+
+    res.json({ properties: ordered });
+  } catch (error: any) {
+    console.error('Get nearby properties error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
