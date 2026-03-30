@@ -11,6 +11,7 @@ import {
   getNearbyProperties
 } from '../controllers/property.controller';
 import { authenticate } from '../middleware/auth.middleware';
+import { requireApprovedVendor } from '../middleware/vendor.middleware';
 import { uploadMultiple } from '../config/multer.config';
 
 const router = express.Router();
@@ -44,10 +45,10 @@ router.get(
 router.get('/:id', getPropertyById);
 
 // Protected routes
-router.post('/', authenticate, uploadMultiple, createProperty);
-router.get('/user/my-properties', authenticate, getUserProperties);
-router.put('/:id', authenticate, uploadMultiple, updateProperty);
-router.delete('/:id', authenticate, deleteProperty);
+router.post('/', authenticate, requireApprovedVendor, uploadMultiple, createProperty);
+router.get('/user/my-properties', authenticate, requireApprovedVendor, getUserProperties);
+router.put('/:id', authenticate, requireApprovedVendor, uploadMultiple, updateProperty);
+router.delete('/:id', authenticate, requireApprovedVendor, deleteProperty);
 router.post('/:id/contact', authenticate, contactOwner);
 
 export default router;

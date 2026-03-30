@@ -9,6 +9,9 @@ import propertyRoutes from './routes/property.routes';
 import userRoutes from './routes/user.routes';
 import adminRoutes from './routes/admin.routes';
 import geoRoutes from './routes/geo.routes';
+import vendorRoutes from './routes/vendor.routes';
+import bookingRoutes from './routes/booking.routes';
+import siteSettingsRoutes from './routes/siteSettings.routes';
 
 dotenv.config();
 
@@ -34,6 +37,9 @@ app.use('/api/properties', propertyRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/geo', geoRoutes);
+app.use('/api/vendor', vendorRoutes);
+app.use('/api/bookings', bookingRoutes);
+app.use('/api/settings', siteSettingsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

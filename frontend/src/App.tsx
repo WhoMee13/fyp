@@ -11,21 +11,33 @@ import Dashboard from './pages/Dashboard';
 import AddProperty from './pages/AddProperty';
 import ManageProperties from './pages/ManageProperties';
 import Profile from './pages/Profile';
+import BecomeVendor from './pages/BecomeVendor';
+import MyBookings from './pages/MyBookings';
+import VendorBookings from './pages/VendorBookings';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminProperties from './pages/AdminProperties';
 import AdminUsers from './pages/AdminUsers';
 import AdminProfile from './pages/AdminProfile';
+import AdminVendors from './pages/AdminVendors';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
+import VendorRoute from './components/VendorRoute';
 import Layout from './components/Layout';
 import AdminLayout from './components/AdminLayout';
 import FindOnMap from './pages/FindOnMap';
+import AdminSettings from './pages/AdminSettings';
+import { SettingsProvider } from './context/SettingsContext';
+import { ThemeProvider } from './context/ThemeContext';
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   return (
-    <AuthProvider>
-      <LocationProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <SettingsProvider>
+          <LocationProvider>
         <Router>
+          <ScrollToTop />
           <Routes>
           {/* Public routes */}
           <Route path="/" element={<Layout />}>
@@ -53,19 +65,35 @@ function App() {
               }
             />
             <Route
-              path="properties/add"
+              path="become-vendor"
               element={
                 <ProtectedRoute>
-                  <AddProperty />
+                  <BecomeVendor />
                 </ProtectedRoute>
+              }
+            />
+            <Route
+              path="properties/add"
+              element={
+                <VendorRoute>
+                  <AddProperty />
+                </VendorRoute>
               }
             />
             <Route
               path="properties/manage"
               element={
-                <ProtectedRoute>
+                <VendorRoute>
                   <ManageProperties />
-                </ProtectedRoute>
+                </VendorRoute>
+              }
+            />
+            <Route
+              path="vendor-bookings"
+              element={
+                <VendorRoute>
+                  <VendorBookings />
+                </VendorRoute>
               }
             />
             <Route
@@ -73,6 +101,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="my-bookings"
+              element={
+                <ProtectedRoute>
+                  <MyBookings />
                 </ProtectedRoute>
               }
             />
@@ -105,6 +141,14 @@ function App() {
               }
             />
             <Route
+              path="vendors"
+              element={
+                <AdminRoute>
+                  <AdminVendors />
+                </AdminRoute>
+              }
+            />
+            <Route
               path="profile"
               element={
                 <AdminRoute>
@@ -112,12 +156,21 @@ function App() {
                 </AdminRoute>
               }
             />
+            <Route
+              path="settings"
+              element={
+                <AdminRoute>
+                  <AdminSettings />
+                </AdminRoute>
+              }
+            />
           </Route>
           </Routes>
         </Router>
       </LocationProvider>
-      <Toaster position="top-right" />
+      </SettingsProvider>
     </AuthProvider>
+    </ThemeProvider>
   );
 }
 

@@ -20,7 +20,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, isAdmin } = useAuth();
+  const { login } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const {
@@ -34,9 +34,9 @@ const Login = () => {
   const onSubmit = async (data: LoginFormData) => {
     try {
       setLoading(true);
-      await login(data.email, data.password);
+      const user = await login(data.email, data.password);
       // Redirect based on user role
-      navigate(isAdmin ? '/admin' : '/dashboard');
+      navigate(user.role === 'ADMIN' ? '/admin' :user.role === 'VENDOR' ? '/dashboard' : '/');
     } catch (error) {
       // Error handled in AuthContext
     } finally {

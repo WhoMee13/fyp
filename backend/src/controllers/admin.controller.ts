@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, VendorStatus } from '@prisma/client';
 import { AuthRequest } from '../middleware/auth.middleware';
 
 const prisma = new PrismaClient();
@@ -139,6 +139,54 @@ export const updateUserStatus = async (req: AuthRequest, res: Response) => {
     });
   } catch (error: any) {
     console.error('Update user status error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const updateUserRole = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+
+    if (!['USER', 'ADMIN'].includes(role)) {
+      return res.status(400).json({ error: 'Invalid role' });
+    }
+
+    const adminsCount = await prisma.user.count({
+      where: { role: 'ADMIN', status: 'ACTIVE' }
+    });
+
+    const targetUser = await prisma.user.findUnique({
+      where: { id },
+      select: { id: true, role: true, status: true }
+    });
+
+    if (!targetUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (targetUser.role === 'ADMIN' && role === 'USER' && adminsCount <= 1) {
+      return res.status(400).json({ error: 'At least one active admin must remain' });
+    }
+
+    const user = await prisma.user.update({
+      where: { id },
+      data: { role },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        status: true
+      }
+    });
+
+    res.json({
+      message: 'User role updated successfully',
+      user
+    });
+  } catch (error: any) {
+    console.error('Update user role error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -338,6 +386,116 @@ export const getReports = async (req: AuthRequest, res: Response) => {
     });
   } catch (error: any) {
     console.error('Get reports error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getVendorApplications = async (req: AuthRequest, res: Response) => {
+  try {
+    const { page = '1', limit = '20', status } = req.query;
+
+    const pageNum = parseInt(page as string);
+    const limitNum = parseInt(limit as string);
+    const skip = (pageNum - 1) * limitNum;
+
+    const where: any = {};
+    if (status && typeof status === 'string') {
+      where.status = status;
+    }
+
+    const [applications, total] = await Promise.all([
+      prisma.vendorProfile.findMany({
+        where,
+        skip,
+        take: limitNum,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true
+            }
+          }
+        }
+      }),
+      prisma.vendorProfile.count({ where })
+    ]);
+
+    res.json({
+      applications,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        pages: Math.ceil(total / limitNum)
+      }
+    });
+  } catch (error: any) {
+    console.error('Get vendor applications error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const approveVendorApplication = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const profile = await prisma.vendorProfile.update({
+      where: { id },
+      data: {
+        status: VendorStatus.APPROVED
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true
+          }
+        }
+      }
+    });
+
+    res.json({
+      message: 'Vendor application approved successfully',
+      profile
+    });
+  } catch (error: any) {
+    console.error('Approve vendor application error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const rejectVendorApplication = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const profile = await prisma.vendorProfile.update({
+      where: { id },
+      data: {
+        status: VendorStatus.REJECTED
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true
+          }
+        }
+      }
+    });
+
+    res.json({
+      message: 'Vendor application rejected successfully',
+      profile
+    });
+  } catch (error: any) {
+    console.error('Reject vendor application error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

@@ -11,7 +11,8 @@ datasource db {
 }
 
 enum UserRole {
-  USER
+  CUSTOMER
+  VENDOR
   ADMIN
 }
 
@@ -37,6 +38,12 @@ enum PropertyStatus {
   REJECTED
 }
 
+enum ListingStatus {
+  ACTIVE
+  SOLD_OUT
+  RENTED_OUT
+}
+
 enum SizeUnit {
   sq_ft
   sq_m
@@ -48,38 +55,61 @@ model User {
   id        String      @id @default(uuid())
   name      String
   email     String      @unique
-  phone     String?
+  phone     String      // Made mandatory
   password  String
-  role      UserRole    @default(USER)
+  role      UserRole    @default(CUSTOMER)
   status    UserStatus  @default(ACTIVE)
   createdAt DateTime    @default(now()) @map("created_at")
   updatedAt DateTime    @updatedAt @map("updated_at")
 
   properties      Property[]
   contactRequests ContactRequest[] @relation("SenderContacts")
+  vendorProfile   VendorProfile?
+  customerBookings Booking[]       @relation("CustomerBookings")
+  vendorBookings   Booking[]       @relation("VendorBookings")
 
   @@map("users")
 }
 
 model Property {
-  id          String          @id @default(uuid())
-  title       String
-  description String          @db.Text
-  propertyType PropertyType   @map("property_type")
-  purpose     PropertyPurpose
-  price       Float
-  landSize    Float           @map("land_size")
-  sizeUnit    SizeUnit        @map("size_unit")
-  status      PropertyStatus  @default(PENDING)
-  isActive    Boolean         @default(true) @map("is_active")
-  ownerId     String          @map("owner_id")
-  createdAt   DateTime        @default(now()) @map("created_at")
-  updatedAt   DateTime        @updatedAt @map("updated_at")
+  id            String          @id @default(uuid())
+  title         String
+  description   String          @db.Text
+  propertyType  PropertyType    @map("property_type")
+  purpose       PropertyPurpose
+  price         Float
+  landSize      Float           @map("land_size")
+  sizeUnit      SizeUnit        @map("size_unit")
+  status        PropertyStatus  @default(PENDING)
+  listingStatus ListingStatus   @default(ACTIVE) @map("listing_status")
+  isActive      Boolean         @default(true) @map("is_active")
+  ownerId       String          @map("owner_id")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
 
-  owner   User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  images  PropertyImage[]
-  location Location?
+  // Residential specific fields
+  bedrooms      Int?            @map("bedrooms")
+  bathrooms     Int?            @map("bathrooms")
+  bhkType       String?         @map("bhk_type") // 1BHK, 2BHK, 3BHK, etc.
+  floors        Int?            @map("floors")
+  totalFloors   Int?            @map("total_floors")
+  parkingSpaces Int?            @map("parking_spaces")
+  
+  // Commercial specific fields
+  officeSpace   Float?          @map("office_space") // in sq ft
+  hasParking    Boolean?        @default(false) @map("has_parking")
+  amenities     String?         @db.Text @map("amenities")
+  
+  // Agricultural specific fields
+  soilType      String?         @map("soil_type")
+  waterAccess   Boolean?        @default(false) @map("water_access")
+  cropType      String?         @map("crop_type")
+
+  owner     User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  images    PropertyImage[]
+  location  Location?
   contactRequests ContactRequest[]
+  bookings  Booking[]
 
   @@map("properties")
 }
@@ -122,5 +152,73 @@ model ContactRequest {
   sender   User     @relation("SenderContacts", fields: [senderId], references: [id], onDelete: Cascade)
 
   @@map("contact_requests")
+}
+
+enum VendorStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum BookingType {
+  RENTAL
+  PURCHASE
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED_BY_VENDOR
+  CANCELLED_BY_CUSTOMER
+  COMPLETED
+}
+
+model VendorProfile {
+  id               String        @id @default(uuid())
+  userId           String        @unique @map("user_id")
+  citizenshipId    String        @map("citizenship_id")
+  frontImagePath   String        @map("front_image_path")
+  backImagePath    String        @map("back_image_path")
+  status           VendorStatus  @default(PENDING)
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("vendor_profiles")
+}
+
+model Booking {
+  id          String         @id @default(uuid())
+  propertyId  String         @map("property_id")
+  customerId  String         @map("customer_id")
+  vendorId    String         @map("vendor_id")
+  type        BookingType
+  startDate   DateTime       @map("start_date")
+  endDate     DateTime?      @map("end_date") // null for purchase bookings
+  totalPrice  Float?         @map("total_price")
+  status      BookingStatus  @default(PENDING)
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  property    Property       @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  customer    User           @relation("CustomerBookings", fields: [customerId], references: [id], onDelete: Cascade)
+  vendor      User           @relation("VendorBookings", fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@map("bookings")
+}
+
+model SiteSetting {
+  id            String   @id @default(uuid())
+  logo          String?
+  appName       String   @default("PropertyRental")
+  footerText    String?  @db.Text
+  copyrightText String?
+  contactEmail  String?
+  contactPhone  String?
+  address       String?
+  updatedAt     DateTime @updatedAt
+
+  @@map("site_settings")
 }
 

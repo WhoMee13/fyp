@@ -6,114 +6,6 @@ dotenv.config();
 
 const prisma = new PrismaClient();
 
-const NEPAL_LOCATIONS = [
-  {
-    city: 'Kathmandu',
-    state: 'Bagmati',
-    country: 'Nepal',
-    latitude: 27.7172,
-    longitude: 85.3240
-  },
-  {
-    city: 'Pokhara',
-    state: 'Gandaki',
-    country: 'Nepal',
-    latitude: 28.2096,
-    longitude: 83.9856
-  },
-  {
-    city: 'Lalitpur',
-    state: 'Bagmati',
-    country: 'Nepal',
-    latitude: 27.6710,
-    longitude: 85.3258
-  },
-  {
-    city: 'Bharatpur',
-    state: 'Bagmati',
-    country: 'Nepal',
-    latitude: 27.6783,
-    longitude: 84.4349
-  },
-  {
-    city: 'Biratnagar',
-    state: 'Koshi',
-    country: 'Nepal',
-    latitude: 26.4525,
-    longitude: 87.2718
-  },
-  {
-    city: 'Birgunj',
-    state: 'Madhesh',
-    country: 'Nepal',
-    latitude: 27.0000,
-    longitude: 84.8667
-  },
-  {
-    city: 'Butwal',
-    state: 'Lumbini',
-    country: 'Nepal',
-    latitude: 27.7000,
-    longitude: 83.4500
-  },
-  {
-    city: 'Dharan',
-    state: 'Koshi',
-    country: 'Nepal',
-    latitude: 26.8147,
-    longitude: 87.2845
-  },
-  {
-    city: 'Hetauda',
-    state: 'Bagmati',
-    country: 'Nepal',
-    latitude: 27.4283,
-    longitude: 85.0322
-  },
-  {
-    city: 'Janakpur',
-    state: 'Madhesh',
-    country: 'Nepal',
-    latitude: 26.7288,
-    longitude: 85.9254
-  },
-  {
-    city: 'Nepalgunj',
-    state: 'Lumbini',
-    country: 'Nepal',
-    latitude: 28.0500,
-    longitude: 81.6167
-  },
-  {
-    city: 'Itahari',
-    state: 'Koshi',
-    country: 'Nepal',
-    latitude: 26.6667,
-    longitude: 87.2833
-  },
-  {
-    city: 'Bhaktapur',
-    state: 'Bagmati',
-    country: 'Nepal',
-    latitude: 27.6710,
-    longitude: 85.4298
-  },
-  {
-    city: 'Dhulikhel',
-    state: 'Bagmati',
-    country: 'Nepal',
-    latitude: 27.6167,
-    longitude: 85.5500
-  },
-  {
-    city: 'Chitwan',
-    state: 'Bagmati',
-    country: 'Nepal',
-    latitude: 27.5292,
-    longitude: 84.3542
-  }
-];
-
 async function main() {
   console.log('🚀 Starting initialization...');
 
@@ -134,6 +26,7 @@ async function main() {
         name: 'Admin User',
         email: adminEmail,
         password: hashedPassword,
+        phone: '9800000000',
         role: 'ADMIN',
         status: 'ACTIVE'
       }
@@ -143,15 +36,82 @@ async function main() {
     console.log(`   Password: ${adminPassword}`);
   }
 
-  // Note: Locations are stored per property, so we don't create a separate locations table
-  // This is just for reference - locations will be created when properties are added
-  console.log('✅ Nepal locations reference data ready');
-  console.log(`   ${NEPAL_LOCATIONS.length} locations available`);
+  // Create vendor user
+  const vendorEmail = 'vendor@property.com';
+  const vendorPassword = 'vendor123';
 
-  console.log('\n✨ Initialization complete!');
-  console.log('\n📝 Next steps:');
-  console.log('   1. Run migrations: npx prisma migrate dev');
-  console.log('   2. Start the server: npm run dev');
+  const existingVendor = await prisma.user.findUnique({
+    where: { email: vendorEmail }
+  });
+
+  if (existingVendor) {
+    console.log('✅ Vendor user already exists');
+  } else {
+    const hashedPassword = await bcrypt.hash(vendorPassword, 10);
+    const vendor = await prisma.user.create({
+      data: {
+        name: 'Vendor User',
+        email: vendorEmail,
+        password: hashedPassword,
+        phone: '9800000001',
+        role: 'VENDOR',
+        status: 'ACTIVE'
+      }
+    });
+    console.log('✅ Vendor user created:');
+    console.log(`   Email: ${vendorEmail}`);
+    console.log(`   Password: ${vendorPassword}`);
+  }
+
+  // Create customer
+  const customerEmail = 'customer@property.com';
+  const customerPassword = 'customer123';
+
+  const existingCustomer = await prisma.user.findUnique({
+    where: { email: customerEmail }
+  });
+
+  if (existingCustomer) {
+    console.log('✅ Customer user already exists');
+  } else {
+    const hashedPassword = await bcrypt.hash(customerPassword, 10);
+    const customer = await prisma.user.create({
+      data: {
+        name: 'Customer user',
+        email: customerEmail,
+        password: hashedPassword,
+        phone: '9800000002',
+        role: 'CUSTOMER',
+        status: 'ACTIVE'
+      }
+    });
+    console.log('✅ Customer user created:');
+    console.log(`   Email: ${customerEmail}`);
+    console.log(`   Password: ${customerPassword}`);
+  }
+
+  // Create initial site settings
+  const existingSettings = await prisma.siteSetting.findFirst();
+  if (!existingSettings) {
+    await prisma.siteSetting.create({
+      data: {
+        appName: 'PropertyRental',
+        logo: null,
+        footerText: 'Your one-stop destination for finding the perfect property. Buy, rent, and manage properties with ease.',
+        copyrightText: `© ${new Date().getFullYear()} PropertyRental. All rights reserved.`,
+        contactEmail: 'support@propertyrental.com',
+        contactPhone: '+977-1-4444444',
+        address: 'Kathmandu, Nepal'
+      }
+    });
+    console.log('✅ Initial site settings created');
+  } else {
+    console.log('✅ Site settings already exist');
+  }
+
+
+  console.log('\n  Initialization complete!');
+  console.log('    Start the server: npm run dev / pnpm dev');
 }
 
 main()

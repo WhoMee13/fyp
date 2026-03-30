@@ -114,6 +114,16 @@ export const getPropertyById = async (req: Request, res: Response) => {
             email: true,
             phone: true
           }
+        },
+        bookings: {
+          where: {
+            status: { in: ['PENDING', 'CONFIRMED'] }
+          },
+          select: {
+            startDate: true,
+            endDate: true,
+            status: true
+          }
         }
       }
     });
@@ -149,7 +159,22 @@ export const createProperty = async (req: AuthRequest, res: Response) => {
       state,
       country,
       latitude,
-      longitude
+      longitude,
+      // Residential fields
+      bedrooms,
+      bathrooms,
+      bhkType,
+      floors,
+      totalFloors,
+      parkingSpaces,
+      // Commercial fields
+      officeSpace,
+      hasParking,
+      amenities,
+      // Agricultural fields
+      soilType,
+      waterAccess,
+      cropType
     } = req.body;
 
     const files = req.files as Express.Multer.File[];
@@ -162,33 +187,58 @@ export const createProperty = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Latitude and longitude are required for property location' });
     }
 
-    const property = await prisma.property.create({
-      data: {
-        title,
-        description,
-        propertyType,
-        purpose,
-        price: parseFloat(price),
-        landSize: parseFloat(landSize),
-        sizeUnit,
-        ownerId: req.user!.id,
-        images: {
-          create: files.map((file, index) => ({
-            imageUrl: `/public/uploads/${file.filename}`,
-            isPrimary: index === 0
-          }))
-        },
-        location: {
-          create: {
-            address,
-            city,
-            state: state || null,
-            country: country || 'Nepal',
-            latitude: parseFloat(latitude),
-            longitude: parseFloat(longitude)
-          }
-        }
+    // Build property data object with conditional fields
+    const propertyData: any = {
+      title,
+      description,
+      propertyType,
+      purpose,
+      price: parseFloat(price),
+      landSize: parseFloat(landSize),
+      sizeUnit,
+      ownerId: req.user!.id,
+      images: {
+        create: files.map((file, index) => ({
+          imageUrl: `/public/uploads/${file.filename}`,
+          isPrimary: index === 0
+        }))
       },
+      location: {
+        create: {
+          address,
+          city,
+          state: state || null,
+          country: country || 'Nepal',
+          latitude: parseFloat(latitude),
+          longitude: parseFloat(longitude)
+        }
+      }
+    };
+
+    // Add type-specific fields
+    if (propertyType === 'Residential') {
+      if (bedrooms) propertyData.bedrooms = parseInt(bedrooms);
+      if (bathrooms) propertyData.bathrooms = parseInt(bathrooms);
+      if (bhkType) propertyData.bhkType = bhkType;
+      if (floors) propertyData.floors = parseInt(floors);
+      if (totalFloors) propertyData.totalFloors = parseInt(totalFloors);
+      if (parkingSpaces) propertyData.parkingSpaces = parseInt(parkingSpaces);
+    }
+
+    if (propertyType === 'Commercial') {
+      if (officeSpace) propertyData.officeSpace = parseFloat(officeSpace);
+      if (hasParking !== undefined) propertyData.hasParking = hasParking === 'true';
+      if (amenities) propertyData.amenities = amenities;
+    }
+
+    if (propertyType === 'Agricultural') {
+      if (soilType) propertyData.soilType = soilType;
+      if (waterAccess !== undefined) propertyData.waterAccess = waterAccess === 'true';
+      if (cropType) propertyData.cropType = cropType;
+    }
+
+    const property = await prisma.property.create({
+      data: propertyData,
       include: {
         images: true,
         location: true

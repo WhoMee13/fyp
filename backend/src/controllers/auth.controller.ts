@@ -75,7 +75,8 @@ export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     const user = await prisma.user.findUnique({
-      where: { email }
+      where: { email },
+      include: { vendorProfile: true }
     });
 
     if (!user) {
@@ -112,7 +113,8 @@ export const login = async (req: Request, res: Response) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
-        role: user.role
+        role: user.role,
+        vendorProfile: user.vendorProfile
       }
     });
   } catch (error: any) {
@@ -137,7 +139,18 @@ export const getMe = async (req: any, res: Response) => {
         phone: true,
         role: true,
         status: true,
-        createdAt: true
+        createdAt: true,
+        vendorProfile: {
+          select: {
+            id: true,
+            citizenshipId: true,
+            frontImagePath: true,
+            backImagePath: true,
+            status: true,
+            createdAt: true,
+            updatedAt: true
+          }
+        }
       }
     });
 

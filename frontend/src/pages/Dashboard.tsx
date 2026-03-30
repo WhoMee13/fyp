@@ -16,7 +16,7 @@ interface Property {
 }
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, isVendor, vendorStatus } = useAuth();
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
@@ -26,8 +26,12 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchProperties();
-  }, []);
+    if (isVendor) {
+      fetchProperties();
+    } else {
+      setLoading(false);
+    }
+  }, [isVendor]);
 
   const fetchProperties = async () => {
     try {
@@ -64,120 +68,161 @@ const Dashboard = () => {
             <h1 className="text-5xl font-bold mb-2">Dashboard</h1>
             <p className="text-xl text-muted-foreground">Welcome back, {user?.name}</p>
           </div>
-          <Link to="/properties/add">
-            <Button size="lg" className="h-12 px-6">
-              <Plus className="h-5 w-5 mr-2" />
-              Add Property
-            </Button>
-          </Link>
+          {isVendor ? (
+            <Link to="/properties/add">
+              <Button size="lg" className="h-12 px-6">
+                <Plus className="h-5 w-5 mr-2" />
+                Add Property
+              </Button>
+            </Link>
+          ) : (
+            <Link to="/become-vendor">
+              <Button size="lg" variant="outline" className="h-12 px-6">
+                Become Vendor
+              </Button>
+            </Link>
+          )}
         </motion.div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          {statCards.map((stat, index) => (
+        {isVendor ? (
+          <>
+            {/* Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+              {statCards.map((stat, index) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ y: -4 }}
+                >
+                  <Card className="border-2 hover:shadow-xl transition-shadow">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        {stat.label}
+                      </CardTitle>
+                      <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold">{stat.value}</div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Recent Properties */}
             <motion.div
-              key={stat.label}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ y: -4 }}
+              transition={{ delay: 0.3 }}
             >
-              <Card className="border-2 hover:shadow-xl transition-shadow">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    {stat.label}
-                  </CardTitle>
-                  <stat.icon className={`h-5 w-5 ${stat.color}`} />
+              <Card className="border-2">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-2xl">My Properties</CardTitle>
+                  <div className="flex gap-2">
+                    <Link to="/vendor-bookings">
+                      <Button variant="outline">
+                        View Bookings
+                      </Button>
+                    </Link>
+                    <Link to="/properties/manage">
+                      <Button variant="outline" className="group">
+                        Manage All
+                        <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                      </Button>
+                    </Link>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold">{stat.value}</div>
+                  {loading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full"
+                      />
+                    </div>
+                  ) : properties.length === 0 ? (
+                    <div className="text-center py-12">
+                      <p className="text-muted-foreground text-lg mb-4">No properties yet</p>
+                      <Link to="/properties/add">
+                        <Button size="lg">Add Your First Property</Button>
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {properties.slice(0, 5).map((property, index) => (
+                        <motion.div
+                          key={property.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          whileHover={{ x: 4 }}
+                        >
+                          <Link to={`/properties/${property.id}`}>
+                            <div className="flex justify-between items-center p-4 border-2 rounded-lg hover:border-primary transition-colors group">
+                              <div>
+                                <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
+                                  {property.title}
+                                </h3>
+                                <div className="flex gap-2 mt-2">
+                                  <span
+                                    className={`text-xs px-3 py-1 rounded-full font-semibold ${
+                                      property.status === 'APPROVED'
+                                        ? 'bg-green-100 text-green-800'
+                                        : property.status === 'PENDING'
+                                        ? 'bg-yellow-100 text-yellow-800'
+                                        : 'bg-red-100 text-red-800'
+                                    }`}
+                                  >
+                                    {property.status}
+                                  </span>
+                                  {property.isActive ? (
+                                    <span className="text-xs px-3 py-1 rounded-full bg-primary/10 text-primary font-semibold">
+                                      Active
+                                    </span>
+                                  ) : (
+                                    <span className="text-xs px-3 py-1 rounded-full bg-muted text-muted-foreground font-semibold">
+                                      Inactive
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                            </div>
+                          </Link>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
-          ))}
-        </div>
-
-        {/* Recent Properties */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
+          </>
+        ) : (
           <Card className="border-2">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-2xl">My Properties</CardTitle>
-              <Link to="/properties/manage">
-                <Button variant="outline" className="group">
-                  Manage All
-                  <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
+            <CardHeader>
+              <CardTitle className="text-2xl">Customer Dashboard</CardTitle>
             </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="flex items-center justify-center py-12">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full"
-                  />
-                </div>
-              ) : properties.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground text-lg mb-4">No properties yet</p>
-                  <Link to="/properties/add">
-                    <Button size="lg">Add Your First Property</Button>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">
+                You are currently using the platform as a customer. You can browse properties, contact owners, and
+                manage your bookings.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Link to="/my-bookings">
+                  <Button variant="outline">View My Bookings</Button>
+                </Link>
+                {vendorStatus !== 'APPROVED' && (
+                  <Link to="/become-vendor">
+                    <Button>Apply to Become Vendor</Button>
                   </Link>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {properties.slice(0, 5).map((property, index) => (
-                    <motion.div
-                      key={property.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      whileHover={{ x: 4 }}
-                    >
-                      <Link to={`/properties/${property.id}`}>
-                        <div className="flex justify-between items-center p-4 border-2 rounded-lg hover:border-primary transition-colors group">
-                          <div>
-                            <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
-                              {property.title}
-                            </h3>
-                            <div className="flex gap-2 mt-2">
-                              <span
-                                className={`text-xs px-3 py-1 rounded-full font-semibold ${
-                                  property.status === 'APPROVED'
-                                    ? 'bg-green-100 text-green-800'
-                                    : property.status === 'PENDING'
-                                    ? 'bg-yellow-100 text-yellow-800'
-                                    : 'bg-red-100 text-red-800'
-                                }`}
-                              >
-                                {property.status}
-                              </span>
-                              {property.isActive ? (
-                                <span className="text-xs px-3 py-1 rounded-full bg-primary/10 text-primary font-semibold">
-                                  Active
-                                </span>
-                              ) : (
-                                <span className="text-xs px-3 py-1 rounded-full bg-muted text-muted-foreground font-semibold">
-                                  Inactive
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                        </div>
-                      </Link>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
+                )}
+              </div>
             </CardContent>
           </Card>
-        </motion.div>
+        )}
       </div>
     </div>
   );

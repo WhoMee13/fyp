@@ -31,6 +31,24 @@ const propertySchema = z.object({
   country: z.string().default('Nepal'),
   latitude: z.string().min(1, 'Location is required (select on map)'),
   longitude: z.string().min(1, 'Location is required (select on map)'),
+  
+  // Residential specific fields
+  bedrooms: z.string().optional(),
+  bathrooms: z.string().optional(),
+  bhkType: z.string().optional(),
+  floors: z.string().optional(),
+  totalFloors: z.string().optional(),
+  parkingSpaces: z.string().optional(),
+  
+  // Commercial specific fields
+  officeSpace: z.string().optional(),
+  hasParking: z.boolean().optional(),
+  amenities: z.string().optional(),
+  
+  // Agricultural specific fields
+  soilType: z.string().optional(),
+  waterAccess: z.boolean().optional(),
+  cropType: z.string().optional(),
 });
 
 type PropertyFormData = z.infer<typeof propertySchema>;
@@ -66,8 +84,14 @@ const AddProperty = () => {
       country: 'Nepal',
       latitude: '',
       longitude: '',
+      hasParking: false,
+      waterAccess: false,
     },
   });
+
+  const propertyType = watch('propertyType');
+  const hasParking = watch('hasParking');
+  const waterAccess = watch('waterAccess');
 
   const latitude = watch('latitude');
   const longitude = watch('longitude');
@@ -78,8 +102,8 @@ const AddProperty = () => {
   const LocationMarker = () => {
     useMapEvents({
       async click(e) {
-        const lat = e.latlng.lat;
-        const lng = e.latlng.lng;
+        const lat = parseFloat(e.latlng.lat).toFixed(4);
+        const lng = parseFloat(e.latlng.lng).toFixed(4);
         setValue('latitude', lat.toString(), { shouldValidate: true });
         setValue('longitude', lng.toString(), { shouldValidate: true });
 
@@ -134,8 +158,30 @@ const AddProperty = () => {
       formData.append('city', data.city);
       if (data.state) formData.append('state', data.state);
       formData.append('country', data.country || 'Nepal');
-      if (data.latitude) formData.append('latitude', data.latitude);
-      if (data.longitude) formData.append('longitude', data.longitude);
+      if (data.latitude) formData.append('latitude', String(parseFloat(data.latitude).toFixed(4)));
+      if (data.longitude) formData.append('longitude', String(parseFloat(data.longitude).toFixed(4)));
+
+      // Add type-specific fields
+      if (data.propertyType === 'Residential') {
+        if (data.bedrooms) formData.append('bedrooms', data.bedrooms);
+        if (data.bathrooms) formData.append('bathrooms', data.bathrooms);
+        if (data.bhkType) formData.append('bhkType', data.bhkType);
+        if (data.floors) formData.append('floors', data.floors);
+        if (data.totalFloors) formData.append('totalFloors', data.totalFloors);
+        if (data.parkingSpaces) formData.append('parkingSpaces', data.parkingSpaces);
+      }
+
+      if (data.propertyType === 'Commercial') {
+        if (data.officeSpace) formData.append('officeSpace', data.officeSpace);
+        if (data.hasParking !== undefined) formData.append('hasParking', data.hasParking.toString());
+        if (data.amenities) formData.append('amenities', data.amenities);
+      }
+
+      if (data.propertyType === 'Agricultural') {
+        if (data.soilType) formData.append('soilType', data.soilType);
+        if (data.waterAccess !== undefined) formData.append('waterAccess', data.waterAccess.toString());
+        if (data.cropType) formData.append('cropType', data.cropType);
+      }
 
       images.forEach((image) => {
         formData.append('images', image);
@@ -253,6 +299,119 @@ const AddProperty = () => {
                 {errors.sizeUnit && <p className="text-sm text-red-500 mt-1">{errors.sizeUnit.message}</p>}
               </div>
             </div>
+
+            {/* Dynamic fields based on property type */}
+            {propertyType === 'Residential' && (
+              <div className="space-y-4 p-6 bg-blue-50 rounded-xl border-2 border-blue-200">
+                <h3 className="text-lg font-semibold text-blue-900">Residential Property Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="bhkType">BHK Type</Label>
+                    <Select onValueChange={(value) => setValue('bhkType', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select BHK" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1BHK">1BHK</SelectItem>
+                        <SelectItem value="2BHK">2BHK</SelectItem>
+                        <SelectItem value="3BHK">3BHK</SelectItem>
+                        <SelectItem value="4BHK">4BHK</SelectItem>
+                        <SelectItem value="5BHK+">5BHK+</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="bedrooms">Bedrooms</Label>
+                    <Input id="bedrooms" type="number" {...register('bedrooms')} placeholder="2" />
+                  </div>
+                  <div>
+                    <Label htmlFor="bathrooms">Bathrooms</Label>
+                    <Input id="bathrooms" type="number" {...register('bathrooms')} placeholder="2" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="floors">Floor Number</Label>
+                    <Input id="floors" type="number" {...register('floors')} placeholder="3" />
+                  </div>
+                  <div>
+                    <Label htmlFor="totalFloors">Total Floors</Label>
+                    <Input id="totalFloors" type="number" {...register('totalFloors')} placeholder="5" />
+                  </div>
+                  <div>
+                    <Label htmlFor="parkingSpaces">Parking Spaces</Label>
+                    <Input id="parkingSpaces" type="number" {...register('parkingSpaces')} placeholder="1" />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {propertyType === 'Commercial' && (
+              <div className="space-y-4 p-6 bg-green-50 rounded-xl border-2 border-green-200">
+                <h3 className="text-lg font-semibold text-green-900">Commercial Property Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="officeSpace">Office Space (sq ft)</Label>
+                    <Input id="officeSpace" type="number" {...register('officeSpace')} placeholder="1000" />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="hasParking"
+                      {...register('hasParking')}
+                      className="rounded"
+                    />
+                    <Label htmlFor="hasParking">Has Parking Available</Label>
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="amenities">Amenities</Label>
+                  <textarea
+                    id="amenities"
+                    {...register('amenities')}
+                    className="w-full border rounded-md p-2 min-h-[80px]"
+                    placeholder="Elevator, 24/7 Security, Power Backup, etc."
+                  />
+                </div>
+              </div>
+            )}
+
+            {propertyType === 'Agricultural' && (
+              <div className="space-y-4 p-6 bg-yellow-50 rounded-xl border-2 border-yellow-200">
+                <h3 className="text-lg font-semibold text-yellow-900">Agricultural Property Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="soilType">Soil Type</Label>
+                    <Select onValueChange={(value) => setValue('soilType', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select soil type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="clay">Clay</SelectItem>
+                        <SelectItem value="sandy">Sandy</SelectItem>
+                        <SelectItem value="loamy">Loamy</SelectItem>
+                        <SelectItem value="black">Black Soil</SelectItem>
+                        <SelectItem value="red">Red Soil</SelectItem>
+                        <SelectItem value="alluvial">Alluvial</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="cropType">Suitable Crops</Label>
+                    <Input id="cropType" {...register('cropType')} placeholder="Rice, Wheat, Vegetables" />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="waterAccess"
+                      {...register('waterAccess')}
+                      className="rounded"
+                    />
+                    <Label htmlFor="waterAccess">Water Access Available</Label>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div>
               <Label htmlFor="address">Address *</Label>

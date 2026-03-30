@@ -39,3 +39,24 @@ export const upload = multer({
 
 export const uploadMultiple = upload.array('images', 10); // Max 10 images
 
+// For generic uploads like Logo
+const siteSettingsStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, '../../public/uploads/site');
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `logo-${Date.now()}${ext}`);
+  }
+});
+
+export const uploadLogo = multer({
+  storage: siteSettingsStorage,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+  fileFilter
+}).single('logo');
+

@@ -11,7 +11,7 @@ import {
   TableHeader, 
   TableRow 
 } from '../components/ui/table';
-import {
+import { 
   Pagination,
   PaginationContent,
   PaginationItem,
@@ -19,7 +19,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '../components/ui/pagination';
-import { UserCheck, UserX } from 'lucide-react';
+import { UserCheck, UserX, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
 
@@ -89,6 +89,18 @@ const AdminUsers = () => {
       fetchUsers();
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to update user status');
+    }
+  };
+
+  const handleRoleToggle = async (id: string, currentRole: string) => {
+    const newRole = currentRole === 'ADMIN' ? 'USER' : 'ADMIN';
+
+    try {
+      await api.put(`/admin/users/${id}/role`, { role: newRole });
+      toast.success(`User role updated to ${newRole.toLowerCase()}`);
+      fetchUsers();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to update user role');
     }
   };
 
@@ -238,7 +250,7 @@ const AdminUsers = () => {
                             <TableCell className="text-sm text-muted-foreground">
                               {new Date(user.createdAt).toLocaleDateString()}
                             </TableCell>
-                            <TableCell className="text-right">
+                            <TableCell className="text-right space-x-2">
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -254,6 +266,24 @@ const AdminUsers = () => {
                                   <>
                                     <UserCheck className="h-4 w-4 mr-1" />
                                     Activate
+                                  </>
+                                )}
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleRoleToggle(user.id, user.role)}
+                                className="ml-2"
+                              >
+                                {user.role === 'ADMIN' ? (
+                                  <>
+                                    <ArrowDownCircle className="h-4 w-4 mr-1" />
+                                    Make User
+                                  </>
+                                ) : (
+                                  <>
+                                    <ArrowUpCircle className="h-4 w-4 mr-1" />
+                                    Make Admin
                                   </>
                                 )}
                               </Button>

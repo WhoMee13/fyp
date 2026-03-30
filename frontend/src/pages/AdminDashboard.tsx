@@ -77,7 +77,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Quick Links */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <Link to="/admin/properties">
             <motion.div
               whileHover={{ scale: 1.02 }}
@@ -115,6 +115,28 @@ const AdminDashboard = () => {
                   </p>
                   <div className="flex items-center text-primary font-semibold">
                     Go to Users
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </Link>
+
+          <Link to="/admin/vendors">
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Card className="border-2 hover:border-primary transition-colors cursor-pointer h-full">
+                <CardHeader>
+                  <CardTitle className="text-xl">Review Vendors</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground mb-4">
+                    Approve or reject vendor applications and documents
+                  </p>
+                  <div className="flex items-center text-primary font-semibold">
+                    Go to Vendors
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </div>
                 </CardContent>

@@ -2,14 +2,23 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { Button } from './ui/button';
-import { Home, LogIn, LogOut, User, Shield, Menu, X, MapPin } from 'lucide-react';
-import { useState } from 'react';
+import { Home, LogOut, User, Shield, Menu, X, Moon, Sun } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useTheme } from '../context/ThemeContext';
+import { useSettings } from '../context/SettingsContext';
 
 const Navbar = () => {
-  const { isAuthenticated, user, logout, isAdmin } = useAuth();
+  const { isAuthenticated, user, logout, isAdmin, isVendor } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const { settings } = useSettings();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+  useEffect(()=>{
+    const favicon = document.querySelector("link[rel~='icon']");;
+    if(favicon && settings?.logo){
+      favicon.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${settings.logo}`;
+    }
+  },[settings])
   const handleLogout = async () => {
     await logout();
     navigate('/');
@@ -20,47 +29,47 @@ const Navbar = () => {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-border"
+      className="bg-background/95 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-border"
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
-          <Link to="/" className="flex items-center space-x-3 group">
+          <Link to={isAdmin ? "/admin" : "/"} className="flex items-center space-x-3 group">
             <motion.div
               whileHover={{ rotate: 360 }}
               transition={{ duration: 0.6 }}
             >
-              <Home className="h-7 w-7 text-primary" />
+              {settings?.logo ? (
+                <img 
+                  src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${settings.logo}`} 
+                  alt="Logo" 
+                  className="h-10 w-10 object-contain"
+                />
+              ) : (
+                <Home className="h-7 w-7 text-primary" />
+              )}
             </motion.div>
             <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              PropertyRental
+              {settings?.appName || 'PropertyRental'}
             </span>
           </Link>
 
           <div className="hidden lg:flex items-center space-x-8">
-            {/* Hide Properties link from admin users */}
-            {!isAdmin && (
-              <Link
-                to="/properties"
-                className="text-foreground/80 hover:text-primary transition-colors font-medium relative group"
-              >
-                Properties
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
-              </Link>
-            )}
-            {!isAdmin && (
-              <Link
-                to="/find"
-                className="text-foreground/80 hover:text-primary transition-colors font-medium flex items-center gap-1"
-              >
-                <MapPin className="h-4 w-4" />
-                Map Search
-              </Link>
-            )}
-
+            {/* Links for authenticated users */}
             {isAuthenticated ? (
               <>
-                {/* Hide Dashboard link from admin users */}
-                {!isAdmin && (
+                {/* Properties link for customers only */}
+                {!isAdmin && !isVendor && (
+                  <Link
+                    to="/properties"
+                    className="text-foreground/80 hover:text-primary transition-colors font-medium relative group"
+                  >
+                    Properties
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
+                  </Link>
+                )}
+
+                {/* Dashboard link for vendors only */}
+                {isVendor && (
                   <Link
                     to="/dashboard"
                     className="text-foreground/80 hover:text-primary transition-colors font-medium relative group"
@@ -69,14 +78,17 @@ const Navbar = () => {
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
                   </Link>
                 )}
-                {/* Hide Add Property link from admin users */}
-                {!isAdmin && (
+
+                {/* Add Property link for vendors only */}
+                {isVendor && (
                   <Link to="/properties/add">
                     <Button size="sm" className="font-semibold">
                       Add Property
                     </Button>
                   </Link>
                 )}
+
+                {/* Admin link for admin users */}
                 {isAdmin && (
                   <Link
                     to="/admin"
@@ -86,7 +98,28 @@ const Navbar = () => {
                     Admin
                   </Link>
                 )}
+
+                {/* Vendor dashboard link for vendors */}
+                {/* {isVendor && (
+                  <Link
+                    to="/dashboard"
+                    className="text-foreground/80 hover:text-primary transition-colors font-medium flex items-center gap-1"
+                  >
+                    <MapPin className="h-4 w-4" />
+                    Vendor
+                  </Link>
+                )} */}
+
+                {/* Profile and Logout for all authenticated users */}
                 <div className="flex items-center gap-3">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={toggleTheme}
+                    className="rounded-full w-10 h-10"
+                  >
+                    {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+                  </Button>
                   <Link
                     to={isAdmin ? "/admin/profile" : "/profile"}
                     className="text-foreground/80 hover:text-primary transition-colors font-medium flex items-center gap-2"
@@ -101,10 +134,26 @@ const Navbar = () => {
                 </div>
               </>
             ) : (
+              /* Links for non-authenticated users */
               <>
+                <Link
+                  to="/properties"
+                  className="text-foreground/80 hover:text-primary transition-colors font-medium relative group"
+                >
+                  Properties
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
+                </Link>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={toggleTheme}
+                  className="rounded-full w-10 h-10"
+                >
+                  {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+                </Button>
                 <Link to="/login">
                   <Button variant="ghost" size="sm">
-                    <LogIn className="h-4 w-4 mr-2" />
+                    <LogOut className="h-4 w-4 mr-2" />
                     Login
                   </Button>
                 </Link>
@@ -134,29 +183,21 @@ const Navbar = () => {
             exit={{ opacity: 0, height: 0 }}
             className="lg:hidden py-4 space-y-4 border-t border-border"
           >
-            {/* Hide Properties link from admin users */}
-            {!isAdmin && (
+            {isAuthenticated ? (
               <>
-                <Link
-                  to="/properties"
-                  className="block py-2 text-foreground/80 hover:text-primary transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Properties
-                </Link>
-                <Link
-                  to="/find"
-                  className="block py-2 text-foreground/80 hover:text-primary transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Map Search
-                </Link>
-              </>
-            )}
-            {isAuthenticated && (
-              <>
-                {/* Hide Dashboard link from admin users */}
-                {!isAdmin && (
+                {/* Properties link for customers only */}
+                {!isAdmin && !isVendor && (
+                  <Link
+                    to="/properties"
+                    className="block py-2 text-foreground/80 hover:text-primary transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Properties
+                  </Link>
+                )}
+
+                {/* Dashboard link for vendors only */}
+                {isVendor && (
                   <Link
                     to="/dashboard"
                     className="block py-2 text-foreground/80 hover:text-primary transition-colors"
@@ -165,8 +206,9 @@ const Navbar = () => {
                     Dashboard
                   </Link>
                 )}
-                {/* Hide Add Property link from admin users */}
-                {!isAdmin && (
+
+                {/* Add Property link for vendors only */}
+                {isVendor && (
                   <Link
                     to="/properties/add"
                     className="block py-2 text-foreground/80 hover:text-primary transition-colors"
@@ -175,6 +217,8 @@ const Navbar = () => {
                     Add Property
                   </Link>
                 )}
+
+                {/* Admin link for admin users */}
                 {isAdmin && (
                   <Link
                     to="/admin"
@@ -184,20 +228,50 @@ const Navbar = () => {
                     Admin
                   </Link>
                 )}
+
+                {/* Vendor dashboard link for vendors */}
+                {isVendor && (
+                  <Link
+                    to="/vendor/dashboard"
+                    className="block py-2 text-foreground/80 hover:text-primary transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Vendor Dashboard
+                  </Link>
+                )}
+
                 <Link
-                  to={isAdmin ? "/admin/profile" : "/profile"}
+                  to={isAdmin ? "/admin/profile" : isVendor ? "/vendor/profile" : "/profile"}
                   className="block py-2 text-foreground/80 hover:text-primary transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Profile
                 </Link>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm font-medium">Dark Mode</span>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={toggleTheme}
+                    className="rounded-full"
+                  >
+                    {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+                  </Button>
+                </div>
                 <Button variant="outline" onClick={handleLogout} className="w-full">
                   Logout
                 </Button>
               </>
-            )}
-            {!isAuthenticated && (
+            ) : (
+              /* Non-authenticated users */
               <>
+                <Link
+                  to="/properties"
+                  className="block py-2 text-foreground/80 hover:text-primary transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Properties
+                </Link>
                 <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="outline" className="w-full">
                     Login

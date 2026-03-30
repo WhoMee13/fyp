@@ -1,8 +1,11 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Home, Mail, Phone } from 'lucide-react';
+import { Home, Mail, Phone, MapPin } from 'lucide-react';
+import { useSettings } from '../context/SettingsContext';
 
 const Footer = () => {
+  const { settings } = useSettings();
+
   return (
     <footer className="bg-gradient-to-b from-muted/50 to-background border-t border-border mt-auto">
       <div className="container mx-auto px-4 py-16">
@@ -14,13 +17,21 @@ const Footer = () => {
             transition={{ duration: 0.6 }}
           >
             <div className="flex items-center space-x-3 mb-4">
-              <Home className="h-6 w-6 text-primary" />
+              {settings?.logo ? (
+                <img 
+                  src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${settings.logo}`} 
+                  alt="Logo" 
+                  className="h-8 w-8 object-contain"
+                />
+              ) : (
+                <Home className="h-6 w-6 text-primary" />
+              )}
               <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                PropertyRental
+                {settings?.appName || 'PropertyRental'}
               </span>
             </div>
             <p className="text-muted-foreground leading-relaxed">
-              Your trusted platform for buying and renting properties in Nepal. Discover your dream property today.
+              {settings?.footerText || 'Your trusted platform for buying and renting properties. Discover your dream property today.'}
             </p>
           </motion.div>
 
@@ -43,8 +54,8 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/dashboard" className="text-muted-foreground hover:text-primary transition-colors">
-                  Dashboard
+                <Link to="/profile" className="text-muted-foreground hover:text-primary transition-colors">
+                  Profile Settings
                 </Link>
               </li>
             </ul>
@@ -56,16 +67,26 @@ const Footer = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <h4 className="text-lg font-semibold mb-4">Contact</h4>
+            <h4 className="text-lg font-semibold mb-4">Contact Info</h4>
             <ul className="space-y-3 text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <Mail className="h-4 w-4" />
-                info@propertyrental.com
-              </li>
-              <li className="flex items-center gap-2">
-                <Phone className="h-4 w-4" />
-                +977-1-XXXXXXX
-              </li>
+              {settings?.contactEmail && (
+                <li className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-primary" />
+                  {settings.contactEmail}
+                </li>
+              )}
+              {settings?.contactPhone && (
+                <li className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-primary" />
+                  {settings.contactPhone}
+                </li>
+              )}
+              {settings?.address && (
+                <li className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-primary" />
+                  {settings.address}
+                </li>
+              )}
             </ul>
           </motion.div>
         </div>
@@ -76,7 +97,7 @@ const Footer = () => {
           transition={{ delay: 0.3 }}
           className="border-t border-border mt-12 pt-8 text-center text-muted-foreground"
         >
-          <p>&copy; 2024 PropertyRental. All rights reserved.</p>
+          <p>{settings?.copyrightText || `© ${new Date().getFullYear()} PropertyRental. All rights reserved.`}</p>
         </motion.div>
       </div>
     </footer>
