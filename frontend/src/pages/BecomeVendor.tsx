@@ -6,6 +6,7 @@ import { Label } from '../components/ui/label';
 import { useAuth } from '../context/AuthContext';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
+import { statusBadgeClass } from '../lib/theme';
 
 const BecomeVendor = () => {
   const { vendorStatus, refreshUser } = useAuth();
@@ -71,35 +72,17 @@ const BecomeVendor = () => {
   };
 
   const renderStatus = () => {
+    const base = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium';
     if (!vendorStatus) {
-      return (
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800">
-          Not applied
-        </span>
-      );
+      return <span className={`${base} ${statusBadgeClass('neutral')}`}>Not applied</span>;
     }
-
     if (vendorStatus === 'PENDING') {
-      return (
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-yellow-100 text-yellow-800">
-          Pending review
-        </span>
-      );
+      return <span className={`${base} ${statusBadgeClass('warning')}`}>Pending review</span>;
     }
-
     if (vendorStatus === 'APPROVED') {
-      return (
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
-          Approved vendor
-        </span>
-      );
+      return <span className={`${base} ${statusBadgeClass('success')}`}>Approved vendor</span>;
     }
-
-    return (
-      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-red-100 text-red-800">
-        Rejected
-      </span>
-    );
+    return <span className={`${base} ${statusBadgeClass('destructive')}`}>Rejected</span>;
   };
 
   return (

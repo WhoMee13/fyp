@@ -10,6 +10,8 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { useAuth } from '../context/AuthContext';
 import { LogIn } from 'lucide-react';
+import GoogleLoginButton from '../components/GoogleLoginButton';
+import AuthDivider from '../components/AuthDivider';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -115,6 +117,9 @@ const Login = () => {
                 </Button>
               </motion.div>
             </form>
+
+            <AuthDivider />
+            <GoogleLoginButton text="signin_with" />
 
             <motion.div
               initial={{ opacity: 0 }}

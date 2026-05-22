@@ -28,7 +28,8 @@ async function main() {
         password: hashedPassword,
         phone: '9800000000',
         role: 'ADMIN',
-        status: 'ACTIVE'
+        status: 'ACTIVE',
+        authProvider: 'LOCAL',
       }
     });
     console.log('✅ Admin user created:');
@@ -55,7 +56,8 @@ async function main() {
         password: hashedPassword,
         phone: '9800000001',
         role: 'VENDOR',
-        status: 'ACTIVE'
+        status: 'ACTIVE',
+        authProvider: 'LOCAL',
       }
     });
     console.log('✅ Vendor user created:');
@@ -82,7 +84,8 @@ async function main() {
         password: hashedPassword,
         phone: '9800000002',
         role: 'CUSTOMER',
-        status: 'ACTIVE'
+        status: 'ACTIVE',
+        authProvider: 'LOCAL',
       }
     });
     console.log('✅ Customer user created:');

@@ -7,6 +7,7 @@ import { Plus, Package, CheckCircle, XCircle, ArrowRight } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import { propertyStatusBadge, statIconColors } from '../lib/theme';
 
 interface Property {
   id: string;
@@ -51,9 +52,9 @@ const Dashboard = () => {
   };
 
   const statCards = [
-    { label: 'Total Properties', value: stats.total, icon: Package, color: 'text-blue-600' },
-    { label: 'Active Properties', value: stats.active, icon: CheckCircle, color: 'text-green-600' },
-    { label: 'Pending Approval', value: stats.pending, icon: XCircle, color: 'text-yellow-600' },
+    { label: 'Total Properties', value: stats.total, icon: Package, color: statIconColors.info },
+    { label: 'Active Properties', value: stats.active, icon: CheckCircle, color: statIconColors.success },
+    { label: 'Pending Approval', value: stats.pending, icon: XCircle, color: statIconColors.warning },
   ];
 
   return (
@@ -120,10 +121,16 @@ const Dashboard = () => {
               <Card className="border-2">
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="text-2xl">My Properties</CardTitle>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
+                    <Link to="/properties">
+                      <Button variant="outline">Browse Properties</Button>
+                    </Link>
+                    <Link to="/my-bookings">
+                      <Button variant="outline">My Bookings</Button>
+                    </Link>
                     <Link to="/vendor-bookings">
                       <Button variant="outline">
-                        View Bookings
+                        Incoming Bookings
                       </Button>
                     </Link>
                     <Link to="/properties/manage">
@@ -168,13 +175,7 @@ const Dashboard = () => {
                                 </h3>
                                 <div className="flex gap-2 mt-2">
                                   <span
-                                    className={`text-xs px-3 py-1 rounded-full font-semibold ${
-                                      property.status === 'APPROVED'
-                                        ? 'bg-green-100 text-green-800'
-                                        : property.status === 'PENDING'
-                                        ? 'bg-yellow-100 text-yellow-800'
-                                        : 'bg-red-100 text-red-800'
-                                    }`}
+                                    className={`text-xs px-3 py-1 rounded-full font-semibold ${propertyStatusBadge(property.status)}`}
                                   >
                                     {property.status}
                                   </span>

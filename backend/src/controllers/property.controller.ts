@@ -29,10 +29,15 @@ export const getProperties = async (req: Request, res: Response) => {
     const limitNum = parseInt(limit as string);
     const skip = (pageNum - 1) * limitNum;
 
+    const authReq = req as AuthRequest;
     const where: any = {
       status: 'APPROVED',
       isActive: true
     };
+
+    if (authReq.user?.id) {
+      where.ownerId = { not: authReq.user.id };
+    }
 
     if (city) {
       where.location = {
@@ -419,6 +424,10 @@ export const contactOwner = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Property not found' });
     }
 
+    if (property.ownerId === req.user!.id) {
+      return res.status(400).json({ error: 'You cannot contact yourself about your own property' });
+    }
+
     const contactRequest = await prisma.contactRequest.create({
       data: {
         propertyId: id,
@@ -456,27 +465,49 @@ export const getNearbyProperties = async (req: Request, res: Response) => {
     const resultLimit = limit ? parseInt(limit as string, 10) : 20;
 
     // Haversine-based distance query in kilometers (Earth radius ~ 6371km)
-    const rows = await prisma.$queryRaw<
-      { id: string; distance: number }[]
-    >`
-      SELECT
-        p.id AS id,
-        (6371 * acos(
-          cos(radians(${latitude})) * cos(radians(l.latitude)) *
-          cos(radians(l.longitude) - radians(${longitude})) +
-          sin(radians(${latitude})) * sin(radians(l.latitude))
-        )) AS distance
-      FROM properties p
-      INNER JOIN locations l ON l.property_id = p.id
-      WHERE
-        p.status = 'APPROVED'
-        AND p.is_active = 1
-        AND l.latitude IS NOT NULL
-        AND l.longitude IS NOT NULL
-      HAVING distance <= ${radius}
-      ORDER BY distance ASC
-      LIMIT ${resultLimit};
-    `;
+    const authReq = req as AuthRequest;
+    const excludeOwnerId = authReq.user?.id ?? null;
+
+    const rows = excludeOwnerId
+      ? await prisma.$queryRaw<{ id: string; distance: number }[]>`
+          SELECT
+            p.id AS id,
+            (6371 * acos(
+              cos(radians(${latitude})) * cos(radians(l.latitude)) *
+              cos(radians(l.longitude) - radians(${longitude})) +
+              sin(radians(${latitude})) * sin(radians(l.latitude))
+            )) AS distance
+          FROM properties p
+          INNER JOIN locations l ON l.property_id = p.id
+          WHERE
+            p.status = 'APPROVED'
+            AND p.is_active = 1
+            AND p.owner_id != ${excludeOwnerId}
+            AND l.latitude IS NOT NULL
+            AND l.longitude IS NOT NULL
+          HAVING distance <= ${radius}
+          ORDER BY distance ASC
+          LIMIT ${resultLimit};
+        `
+      : await prisma.$queryRaw<{ id: string; distance: number }[]>`
+          SELECT
+            p.id AS id,
+            (6371 * acos(
+              cos(radians(${latitude})) * cos(radians(l.latitude)) *
+              cos(radians(l.longitude) - radians(${longitude})) +
+              sin(radians(${latitude})) * sin(radians(l.latitude))
+            )) AS distance
+          FROM properties p
+          INNER JOIN locations l ON l.property_id = p.id
+          WHERE
+            p.status = 'APPROVED'
+            AND p.is_active = 1
+            AND l.latitude IS NOT NULL
+            AND l.longitude IS NOT NULL
+          HAVING distance <= ${radius}
+          ORDER BY distance ASC
+          LIMIT ${resultLimit};
+        `;
 
     if (!rows.length) {
       return res.json({ properties: [] });

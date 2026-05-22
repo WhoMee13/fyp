@@ -89,7 +89,7 @@ const AdminSettings = () => {
           <h1 className="text-3xl font-bold tracking-tight">Site Settings</h1>
           <p className="text-muted-foreground mt-1">Configure your application branding and global information.</p>
         </div>
-        <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 rounded-full border border-green-200">
+        <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-success/15 text-success rounded-full border border-success/25">
           <CheckCircle2 className="h-4 w-4" />
           <span className="text-xs font-semibold uppercase">Dynamic Mode Active</span>
         </div>

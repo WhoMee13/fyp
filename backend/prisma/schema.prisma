@@ -21,6 +21,12 @@ enum UserStatus {
   INACTIVE
 }
 
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+  BOTH
+}
+
 enum PropertyType {
   Residential
   Agricultural
@@ -52,15 +58,17 @@ enum SizeUnit {
 }
 
 model User {
-  id        String      @id @default(uuid())
-  name      String
-  email     String      @unique
-  phone     String      // Made mandatory
-  password  String
-  role      UserRole    @default(CUSTOMER)
-  status    UserStatus  @default(ACTIVE)
-  createdAt DateTime    @default(now()) @map("created_at")
-  updatedAt DateTime    @updatedAt @map("updated_at")
+  id           String       @id @default(uuid())
+  name         String
+  email        String       @unique
+  phone        String?
+  password     String?
+  googleId     String?      @unique @map("google_id")
+  authProvider AuthProvider @default(LOCAL) @map("auth_provider")
+  role         UserRole     @default(CUSTOMER)
+  status       UserStatus   @default(ACTIVE)
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
 
   properties      Property[]
   contactRequests ContactRequest[] @relation("SenderContacts")

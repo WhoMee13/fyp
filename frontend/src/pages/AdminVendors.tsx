@@ -12,6 +12,7 @@ import {
 import { Button } from '../components/ui/button';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
+import { propertyStatusBadge } from '../lib/theme';
 
 interface VendorUser {
   id: string;
@@ -211,13 +212,7 @@ const AdminVendors = () => {
                             </TableCell>
                             <TableCell>
                               <span
-                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                  app.status === 'APPROVED'
-                                    ? 'bg-green-100 text-green-800'
-                                    : app.status === 'PENDING'
-                                    ? 'bg-yellow-100 text-yellow-800'
-                                    : 'bg-red-100 text-red-800'
-                                }`}
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${propertyStatusBadge(app.status)}`}
                               >
                                 {app.status}
                               </span>

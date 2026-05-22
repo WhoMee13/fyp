@@ -11,6 +11,7 @@ import { Badge } from '../components/ui/badge';
 import { useAuth } from '../context/AuthContext';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
+import { statIconColors, statusBadgeClass } from '../lib/theme';
 import { Shield, Mail, Calendar, Activity } from 'lucide-react';
 
 const profileSchema = z.object({
@@ -142,11 +143,11 @@ const AdminProfile = () => {
                   <div className="text-sm text-muted-foreground">Total Users</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-purple-600 mb-2">{stats.totalProperties}</div>
+                  <div className={`text-3xl font-bold mb-2 ${statIconColors.primary}`}>{stats.totalProperties}</div>
                   <div className="text-sm text-muted-foreground">Total Properties</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-yellow-600 mb-2">{stats.pendingProperties}</div>
+                  <div className={`text-3xl font-bold mb-2 ${statIconColors.warning}`}>{stats.pendingProperties}</div>
                   <div className="text-sm text-muted-foreground">Pending Properties</div>
                 </div>
               </div>
@@ -173,20 +174,20 @@ const AdminProfile = () => {
                     <Shield className="h-5 w-5 text-primary" />
                     <div>
                       <div className="font-semibold">Role</div>
-                      <Badge className="bg-purple-100 text-purple-800">Administrator</Badge>
+                      <Badge className={statusBadgeClass('info')}>Administrator</Badge>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Activity className="h-5 w-5 text-green-600" />
+                    <Activity className={`h-5 w-5 ${statIconColors.success}`} />
                     <div>
                       <div className="font-semibold">Status</div>
-                      <Badge className="bg-green-100 text-green-800">Active</Badge>
+                      <Badge className={statusBadgeClass('success')}>Active</Badge>
                     </div>
                   </div>
                 </div>
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <Calendar className="h-5 w-5 text-blue-600" />
+                    <Calendar className={`h-5 w-5 ${statIconColors.info}`} />
                     <div>
                       <div className="font-semibold">Member Since</div>
                       <div className="text-sm text-muted-foreground">

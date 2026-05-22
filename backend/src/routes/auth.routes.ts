@@ -1,6 +1,6 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { register, login, logout, getMe, forgotPassword } from '../controllers/auth.controller';
+import { register, login, logout, getMe, forgotPassword, googleAuth } from '../controllers/auth.controller';
 import { authenticate } from '../middleware/auth.middleware';
 
 const router = express.Router();
@@ -23,6 +23,12 @@ router.post(
     body('password').notEmpty().withMessage('Password is required')
   ],
   login
+);
+
+router.post(
+  '/google',
+  [body('credential').notEmpty().withMessage('Google credential is required')],
+  googleAuth
 );
 
 router.post('/logout', logout);

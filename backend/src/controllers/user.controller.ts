@@ -1,8 +1,9 @@
 import { Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, AuthProvider } from '@prisma/client';
 import { hashPassword, comparePassword } from '../utils/bcrypt.util';
 import { validationResult } from 'express-validator';
 import { AuthRequest } from '../middleware/auth.middleware';
+import { formatAuthUser } from '../utils/auth.util';
 
 const prisma = new PrismaClient();
 
@@ -17,15 +18,17 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
         phone: true,
         role: true,
         status: true,
-        createdAt: true
-      }
+        authProvider: true,
+        password: true,
+        createdAt: true,
+      },
     });
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json({ user });
+    res.json({ user: formatAuthUser(user) });
   } catch (error: any) {
     console.error('Get profile error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -41,10 +44,23 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
 
     const { name, email, phone } = req.body;
 
-    // Check if email is already taken by another user
+    const currentUser = await prisma.user.findUnique({
+      where: { id: req.user!.id },
+    });
+
+    if (!currentUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (currentUser.authProvider === AuthProvider.GOOGLE && email && email !== currentUser.email) {
+      return res.status(400).json({
+        error: 'Email cannot be changed for Google-only accounts. Link a password first or contact support.',
+      });
+    }
+
     if (email) {
       const existingUser = await prisma.user.findUnique({
-        where: { email }
+        where: { email: email.toLowerCase() },
       });
 
       if (existingUser && existingUser.id !== req.user!.id) {
@@ -52,10 +68,12 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    const updateData: any = {};
+    const updateData: Record<string, string | null> = {};
     if (name) updateData.name = name;
-    if (email) updateData.email = email;
-    if (phone !== undefined) updateData.phone = phone;
+    if (email && currentUser.authProvider !== AuthProvider.GOOGLE) {
+      updateData.email = email.toLowerCase();
+    }
+    if (phone !== undefined) updateData.phone = phone || null;
 
     const user = await prisma.user.update({
       where: { id: req.user!.id },
@@ -67,13 +85,15 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
         phone: true,
         role: true,
         status: true,
-        updatedAt: true
-      }
+        authProvider: true,
+        password: true,
+        updatedAt: true,
+      },
     });
 
     res.json({
       message: 'Profile updated successfully',
-      user
+      user: formatAuthUser(user),
     });
   } catch (error: any) {
     console.error('Update profile error:', error);
@@ -91,11 +111,32 @@ export const changePassword = async (req: AuthRequest, res: Response) => {
     const { currentPassword, newPassword } = req.body;
 
     const user = await prisma.user.findUnique({
-      where: { id: req.user!.id }
+      where: { id: req.user!.id },
     });
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
+    }
+
+    const hashedPassword = await hashPassword(newPassword);
+
+    if (!user.password) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          password: hashedPassword,
+          authProvider:
+            user.authProvider === AuthProvider.GOOGLE ? AuthProvider.BOTH : user.authProvider,
+        },
+      });
+
+      return res.json({
+        message: 'Password set successfully. You can now sign in with email and password.',
+      });
+    }
+
+    if (!currentPassword) {
+      return res.status(400).json({ error: 'Current password is required' });
     }
 
     const isPasswordValid = await comparePassword(currentPassword, user.password);
@@ -104,11 +145,9 @@ export const changePassword = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'Current password is incorrect' });
     }
 
-    const hashedPassword = await hashPassword(newPassword);
-
     await prisma.user.update({
       where: { id: req.user!.id },
-      data: { password: hashedPassword }
+      data: { password: hashedPassword },
     });
 
     res.json({ message: 'Password changed successfully' });
@@ -117,4 +156,3 @@ export const changePassword = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
-

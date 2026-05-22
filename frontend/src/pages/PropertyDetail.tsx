@@ -8,6 +8,7 @@ import { MapPin, Ruler, DollarSign, User, Mail, Phone, ArrowLeft } from 'lucide-
 import api from '../lib/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import { alertBoxClass, statusBadgeClass } from '../lib/theme';
 
 interface Property {
   id: string;
@@ -44,7 +45,7 @@ interface Property {
 const PropertyDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated, isVendor } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
   const [contactMessage, setContactMessage] = useState('');
@@ -77,9 +78,8 @@ const PropertyDetail = () => {
       return;
     }
 
-    // Vendors cannot contact property owners
-    if (isVendor) {
-      toast.error('Vendors cannot contact property owners');
+    if (property && user?.id === property.owner.id) {
+      toast.error('You cannot contact yourself about your own property');
       return;
     }
 
@@ -107,9 +107,8 @@ const PropertyDetail = () => {
       return;
     }
 
-    // Vendors cannot book properties
-    if (isVendor) {
-      toast.error('Vendors cannot book properties');
+    if (property && user?.id === property.owner.id) {
+      toast.error('You cannot book or purchase your own property');
       return;
     }
 
@@ -179,6 +178,8 @@ const PropertyDetail = () => {
     return null;
   }
 
+  const isOwnProperty = user?.id === property.owner.id;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       <div className="container mx-auto px-4 py-12">
@@ -202,7 +203,7 @@ const PropertyDetail = () => {
           >
             {/* Images */}
             <Card className="border-2 overflow-hidden">
-              <div className="aspect-video bg-gray-200 relative overflow-hidden">
+              <div className="aspect-video bg-muted relative overflow-hidden">
                 {property.images.length > 0 ? (
                   <motion.img
                     key={selectedImage}
@@ -214,7 +215,7 @@ const PropertyDetail = () => {
                     transition={{ duration: 0.3 }}
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gradient-to-br from-muted to-muted/50">
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-muted">
                     <p>No images available</p>
                   </div>
                 )}
@@ -256,7 +257,7 @@ const PropertyDetail = () => {
                     {property.purpose}
                   </span>
                   {property.status === 'PENDING' && (
-                    <span className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-full text-sm font-semibold">
+                    <span className={`px-4 py-2 rounded-full text-sm font-semibold ${statusBadgeClass('warning')}`}>
                       Pending Approval
                     </span>
                   )}
@@ -371,15 +372,13 @@ const PropertyDetail = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Vendor restriction message */}
-                {isVendor && (
-                  <div className="p-4 bg-red-100 text-red-800 rounded-lg text-center font-medium">
-                    Vendors cannot {property.purpose === 'Sale' ? 'purchase' : 'book'} properties
+                {isOwnProperty && (
+                  <div className={alertBoxClass('info')}>
+                    This is your listing. Manage it from your dashboard.
                   </div>
                 )}
 
-                {/* Booking form for non-vendors */}
-                {!isVendor && (
+                {!isOwnProperty && (
                   <>
                     {property.purpose === 'Rent' && (
                       <div className="grid grid-cols-1 gap-4">
@@ -403,7 +402,7 @@ const PropertyDetail = () => {
                     )}
 
                     {property.purpose === 'Sale' && property.bookings?.some(b => b.status === 'PENDING' || b.status === 'CONFIRMED') ? (
-                      <div className="p-3 bg-red-100 text-red-800 rounded-lg text-center font-medium">
+                      <div className={alertBoxClass('destructive')}>
                         Currently Unavailable for Purchase
                       </div>
                     ) : (

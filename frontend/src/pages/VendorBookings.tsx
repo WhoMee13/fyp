@@ -148,7 +148,6 @@ const VendorBookings = () => {
                     <div className="flex items-center gap-2">
                       {booking.status === 'PENDING' && (
                         <Button
-                          className="bg-green-600 hover:bg-green-700 text-white"
                           disabled={approvingId === booking.id || cancellingId === booking.id}
                           onClick={() => handleApprove(booking.id)}
                         >

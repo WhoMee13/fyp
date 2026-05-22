@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { Button } from './ui/button';
-import { Home, LogOut, User, Shield, Menu, X, Moon, Sun } from 'lucide-react';
+import { Home, LogOut, User, Shield, Menu, X, Moon, Sun, MapPin } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useSettings } from '../context/SettingsContext';
@@ -57,15 +57,25 @@ const Navbar = () => {
             {/* Links for authenticated users */}
             {isAuthenticated ? (
               <>
-                {/* Properties link for customers only */}
-                {!isAdmin && !isVendor && (
-                  <Link
-                    to="/properties"
-                    className="text-foreground/80 hover:text-primary transition-colors font-medium relative group"
-                  >
-                    Properties
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
-                  </Link>
+                {/* Browse properties — customers and vendors */}
+                {!isAdmin && (
+                  <>
+                    <Link
+                      to="/properties"
+                      className="text-foreground/80 hover:text-primary transition-colors font-medium relative group"
+                    >
+                      Properties
+                      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
+                    </Link>
+                    <Link
+                      to="/find"
+                      className="text-foreground/80 hover:text-primary transition-colors font-medium relative group flex items-center gap-1"
+                    >
+                      <MapPin className="h-4 w-4" />
+                      Map
+                      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
+                    </Link>
+                  </>
                 )}
 
                 {/* Dashboard link for vendors only */}
@@ -79,13 +89,22 @@ const Navbar = () => {
                   </Link>
                 )}
 
-                {/* Add Property link for vendors only */}
+                {/* Vendor tools */}
                 {isVendor && (
-                  <Link to="/properties/add">
-                    <Button size="sm" className="font-semibold">
-                      Add Property
-                    </Button>
-                  </Link>
+                  <>
+                    <Link
+                      to="/my-bookings"
+                      className="text-foreground/80 hover:text-primary transition-colors font-medium relative group"
+                    >
+                      My Bookings
+                      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
+                    </Link>
+                    <Link to="/properties/add">
+                      <Button size="sm" className="font-semibold">
+                        Add Property
+                      </Button>
+                    </Link>
+                  </>
                 )}
 
                 {/* Admin link for admin users */}
@@ -143,6 +162,13 @@ const Navbar = () => {
                   Properties
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
                 </Link>
+                <Link
+                  to="/find"
+                  className="text-foreground/80 hover:text-primary transition-colors font-medium relative group flex items-center gap-1"
+                >
+                  <MapPin className="h-4 w-4" />
+                  Map
+                </Link>
                 <Button 
                   variant="ghost" 
                   size="icon" 
@@ -185,37 +211,63 @@ const Navbar = () => {
           >
             {isAuthenticated ? (
               <>
-                {/* Properties link for customers only */}
-                {!isAdmin && !isVendor && (
-                  <Link
-                    to="/properties"
-                    className="block py-2 text-foreground/80 hover:text-primary transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Properties
-                  </Link>
+                {!isAdmin && (
+                  <>
+                    <Link
+                      to="/properties"
+                      className="block py-2 text-foreground/80 hover:text-primary transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Properties
+                    </Link>
+                    <Link
+                      to="/find"
+                      className="block py-2 text-foreground/80 hover:text-primary transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Map
+                    </Link>
+                  </>
                 )}
 
-                {/* Dashboard link for vendors only */}
                 {isVendor && (
-                  <Link
-                    to="/dashboard"
-                    className="block py-2 text-foreground/80 hover:text-primary transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Dashboard
-                  </Link>
-                )}
-
-                {/* Add Property link for vendors only */}
-                {isVendor && (
-                  <Link
-                    to="/properties/add"
-                    className="block py-2 text-foreground/80 hover:text-primary transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Add Property
-                  </Link>
+                  <>
+                    <Link
+                      to="/dashboard"
+                      className="block py-2 text-foreground/80 hover:text-primary transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                    <Link
+                      to="/my-bookings"
+                      className="block py-2 text-foreground/80 hover:text-primary transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      My Bookings
+                    </Link>
+                    <Link
+                      to="/properties/add"
+                      className="block py-2 text-foreground/80 hover:text-primary transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Add Property
+                    </Link>
+                    <Link
+                      to="/properties/manage"
+                      className="block py-2 text-foreground/80 hover:text-primary transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Manage Properties
+                    </Link>
+                    <Link
+                      to="/vendor-bookings"
+                      className="block py-2 text-foreground/80 hover:text-primary transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Incoming Bookings
+                    </Link>
+                  </>
                 )}
 
                 {/* Admin link for admin users */}
@@ -229,19 +281,8 @@ const Navbar = () => {
                   </Link>
                 )}
 
-                {/* Vendor dashboard link for vendors */}
-                {isVendor && (
-                  <Link
-                    to="/vendor/dashboard"
-                    className="block py-2 text-foreground/80 hover:text-primary transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Vendor Dashboard
-                  </Link>
-                )}
-
                 <Link
-                  to={isAdmin ? "/admin/profile" : isVendor ? "/vendor/profile" : "/profile"}
+                  to={isAdmin ? "/admin/profile" : "/profile"}
                   className="block py-2 text-foreground/80 hover:text-primary transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -271,6 +312,13 @@ const Navbar = () => {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Properties
+                </Link>
+                <Link
+                  to="/find"
+                  className="block py-2 text-foreground/80 hover:text-primary transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Map
                 </Link>
                 <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="outline" className="w-full">

@@ -20,6 +20,9 @@
   --color-popover-foreground: hsl(var(--popover-foreground));
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
+  --color-success: hsl(var(--success));
+  --color-warning: hsl(var(--warning));
+  --color-info: hsl(var(--info));
 
   --radius: 0.75rem;
   --radius-lg: var(--radius);
@@ -51,6 +54,9 @@
     --border: 350 15% 90%;
     --input: 350 15% 90%;
     --ring: 350 70% 35%;
+    --success: 142 55% 32%;
+    --warning: 38 92% 38%;
+    --info: 217 70% 42%;
     --radius: 0.75rem;
   }
 
@@ -74,6 +80,17 @@
     --border: 350 15% 25%;
     --input: 350 15% 25%;
     --ring: 350 65% 50%;
+    --success: 142 50% 55%;
+    --warning: 38 85% 55%;
+    --info: 217 70% 62%;
+  }
+
+  html {
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
   }
 
   * {

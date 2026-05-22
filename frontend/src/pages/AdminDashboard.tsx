@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Users, Package, CheckCircle, Clock, ArrowRight } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
+import { propertyStatusBadge, statIconColors } from '../lib/theme';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
@@ -33,10 +34,10 @@ const AdminDashboard = () => {
   };
 
   const statCards = [
-    { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-blue-600' },
-    { label: 'Total Properties', value: stats.totalProperties, icon: Package, color: 'text-purple-600' },
-    { label: 'Pending', value: stats.pendingProperties, icon: Clock, color: 'text-yellow-600' },
-    { label: 'Approved', value: stats.approvedProperties, icon: CheckCircle, color: 'text-green-600' },
+    { label: 'Total Users', value: stats.totalUsers, icon: Users, color: statIconColors.info },
+    { label: 'Total Properties', value: stats.totalProperties, icon: Package, color: statIconColors.primary },
+    { label: 'Pending', value: stats.pendingProperties, icon: Clock, color: statIconColors.warning },
+    { label: 'Approved', value: stats.approvedProperties, icon: CheckCircle, color: statIconColors.success },
   ];
 
   return (
@@ -187,13 +188,7 @@ const AdminDashboard = () => {
                             </p>
                           </div>
                           <span
-                            className={`text-xs px-3 py-1 rounded-full font-semibold ${
-                              property.status === 'APPROVED'
-                                ? 'bg-green-100 text-green-800'
-                                : property.status === 'PENDING'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-red-100 text-red-800'
-                            }`}
+                            className={`text-xs px-3 py-1 rounded-full font-semibold ${propertyStatusBadge(property.status)}`}
                           >
                             {property.status}
                           </span>

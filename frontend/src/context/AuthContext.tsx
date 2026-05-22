@@ -12,13 +12,17 @@ interface VendorProfile {
   updatedAt: string;
 }
 
+type AuthProviderType = 'LOCAL' | 'GOOGLE' | 'BOTH';
+
 interface User {
   id: string;
   name: string;
   email: string;
-  phone?: string;
+  phone?: string | null;
   role: 'CUSTOMER' | 'VENDOR' | 'ADMIN';
   status: 'ACTIVE' | 'INACTIVE';
+  authProvider?: AuthProviderType;
+  hasPassword?: boolean;
   createdAt: string;
   vendorProfile?: VendorProfile | null;
 }
@@ -27,6 +31,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
+  loginWithGoogle: (credential: string) => Promise<User>;
   register: (name: string, email: string, password: string, phone?: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -78,6 +83,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const loginWithGoogle = async (credential: string) => {
+    try {
+      const response = await api.post('/auth/google', { credential });
+      setUser(response.data.user);
+      toast.success('Signed in with Google');
+      return response.data.user;
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Google sign-in failed');
+      throw error;
+    }
+  };
+
   const register = async (name: string, email: string, password: string, phone?: string) => {
     try {
       const response = await api.post('/auth/register', { name, email, password, phone });
@@ -105,6 +122,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         loading,
         login,
+        loginWithGoogle,
         register,
         logout,
         refreshUser,

@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button';
 import { Edit, Trash2, Eye } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
+import { propertyStatusBadge, statusBadgeClass } from '../lib/theme';
 
 interface Property {
   id: string;
@@ -66,7 +67,7 @@ const ManageProperties = () => {
       ) : properties.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-gray-500 mb-4">No properties found</p>
+            <p className="text-muted-foreground mb-4">No properties found</p>
             <Link to="/properties/add">
               <Button>Add Property</Button>
             </Link>
@@ -78,7 +79,7 @@ const ManageProperties = () => {
             <Card key={property.id}>
               <CardContent className="p-4">
                 <div className="flex items-start gap-4">
-                  <div className="w-32 h-24 bg-gray-200 rounded overflow-hidden flex-shrink-0">
+                  <div className="w-32 h-24 bg-muted rounded overflow-hidden flex-shrink-0">
                     {property.images.length > 0 ? (
                       <img
                         src={`http://localhost:5000${property.images[0].imageUrl}`}
@@ -86,7 +87,7 @@ const ManageProperties = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
+                      <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
                         No Image
                       </div>
                     )}
@@ -95,7 +96,7 @@ const ManageProperties = () => {
                   <div className="flex-grow">
                     <h3 className="font-semibold text-lg mb-2">{property.title}</h3>
                     <div className="flex flex-wrap gap-2 mb-2">
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-muted-foreground">
                         {property.location?.city || 'N/A'}
                       </span>
                       <span className="text-sm font-semibold text-primary">
@@ -103,21 +104,13 @@ const ManageProperties = () => {
                       </span>
                     </div>
                     <div className="flex gap-2">
-                      <span
-                        className={`text-xs px-2 py-1 rounded ${
-                          property.status === 'APPROVED'
-                            ? 'bg-green-100 text-green-800'
-                            : property.status === 'PENDING'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
-                      >
+                      <span className={`text-xs px-2 py-1 rounded ${propertyStatusBadge(property.status)}`}>
                         {property.status}
                       </span>
                       {property.isActive ? (
-                        <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-800">Active</span>
+                        <span className={`text-xs px-2 py-1 rounded ${statusBadgeClass('info')}`}>Active</span>
                       ) : (
-                        <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-800">Inactive</span>
+                        <span className={`text-xs px-2 py-1 rounded ${statusBadgeClass('neutral')}`}>Inactive</span>
                       )}
                     </div>
                   </div>

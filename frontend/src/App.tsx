@@ -29,10 +29,14 @@ import AdminSettings from './pages/AdminSettings';
 import { SettingsProvider } from './context/SettingsContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ScrollToTop from './components/ScrollToTop';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 function App() {
   return (
     <ThemeProvider>
+      <GoogleOAuthProvider clientId={googleClientId}>
       <AuthProvider>
         <SettingsProvider>
           <LocationProvider>
@@ -41,14 +45,7 @@ function App() {
           <Routes>
           {/* Public routes */}
           <Route path="/" element={<Layout />}>
-            <Route 
-              index 
-              element={
-                <ProtectedRoute>
-                  <Home />
-                </ProtectedRoute>
-              } 
-            />
+            <Route index element={<Home />} />
             <Route path="properties" element={<Properties />} />
             <Route path="properties/:id" element={<PropertyDetail />} />
             <Route path="find" element={<FindOnMap />} />
@@ -170,6 +167,7 @@ function App() {
       </LocationProvider>
       </SettingsProvider>
     </AuthProvider>
+      </GoogleOAuthProvider>
     </ThemeProvider>
   );
 }

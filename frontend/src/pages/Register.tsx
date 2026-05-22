@@ -10,6 +10,8 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { useAuth } from '../context/AuthContext';
 import { UserPlus } from 'lucide-react';
+import GoogleLoginButton from '../components/GoogleLoginButton';
+import AuthDivider from '../components/AuthDivider';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -149,6 +151,14 @@ const Register = () => {
                 </Button>
               </motion.div>
             </form>
+
+            <AuthDivider />
+            <GoogleLoginButton
+              text="signup_with"
+              onSuccessNavigate={(u) =>
+                navigate(u.role === 'ADMIN' ? '/admin' : u.role === 'VENDOR' ? '/dashboard' : '/')
+              }
+            />
 
             <motion.div
               initial={{ opacity: 0 }}

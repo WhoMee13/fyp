@@ -10,7 +10,7 @@ import {
   contactOwner,
   getNearbyProperties
 } from '../controllers/property.controller';
-import { authenticate } from '../middleware/auth.middleware';
+import { authenticate, optionalAuthenticate } from '../middleware/auth.middleware';
 import { requireApprovedVendor } from '../middleware/vendor.middleware';
 import { uploadMultiple } from '../config/multer.config';
 
@@ -28,6 +28,7 @@ router.get(
     query('minPrice').optional().isFloat({ min: 0 }),
     query('maxPrice').optional().isFloat({ min: 0 })
   ],
+  optionalAuthenticate,
   getProperties
 );
 
@@ -39,6 +40,7 @@ router.get(
     query('radiusKm').optional().isFloat({ min: 1 }).withMessage('radiusKm must be a positive number'),
     query('limit').optional().isInt({ min: 1, max: 50 }).withMessage('limit must be between 1 and 50')
   ],
+  optionalAuthenticate,
   getNearbyProperties
 );
 

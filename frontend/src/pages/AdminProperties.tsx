@@ -23,6 +23,7 @@ import {
 import { CheckCircle, XCircle, Trash2, Image as ImageIcon } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
+import { propertyStatusBadge, statusBadgeClass } from '../lib/theme';
 
 interface Property {
   id: string;
@@ -231,7 +232,7 @@ const AdminProperties = () => {
                           >
                             <TableCell>
                               <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
+                                <div className="w-12 h-12 bg-muted rounded-lg overflow-hidden flex-shrink-0">
                                   {property.images.length > 0 ? (
                                     <img
                                       src={`http://localhost:5000${property.images[0].imageUrl}`}
@@ -239,7 +240,7 @@ const AdminProperties = () => {
                                       className="w-full h-full object-cover"
                                     />
                                   ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                                       <ImageIcon className="h-4 w-4" />
                                     </div>
                                   )}
@@ -264,7 +265,7 @@ const AdminProperties = () => {
                               </div>
                             </TableCell>
                             <TableCell>
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusBadgeClass('info')}`}>
                                 {property.propertyType}
                               </span>
                             </TableCell>
@@ -275,13 +276,7 @@ const AdminProperties = () => {
                               {property.location?.city || <span className="text-muted-foreground">No location</span>}
                             </TableCell>
                             <TableCell>
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                property.status === 'APPROVED'
-                                  ? 'bg-green-100 text-green-800'
-                                  : property.status === 'PENDING'
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : 'bg-red-100 text-red-800'
-                              }`}>
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${propertyStatusBadge(property.status)}`}>
                                 {property.status}
                               </span>
                             </TableCell>
@@ -296,7 +291,7 @@ const AdminProperties = () => {
                                       variant="outline"
                                       size="sm"
                                       onClick={() => handleApprove(property.id)}
-                                      className="text-green-600 hover:text-green-700"
+                                      className="text-success hover:text-success/80"
                                     >
                                       <CheckCircle className="h-4 w-4 mr-1" />
                                       Approve
@@ -305,7 +300,7 @@ const AdminProperties = () => {
                                       variant="outline"
                                       size="sm"
                                       onClick={() => handleReject(property.id)}
-                                      className="text-red-600 hover:text-red-700"
+                                      className="text-destructive hover:text-destructive/80"
                                     >
                                       <XCircle className="h-4 w-4 mr-1" />
                                       Reject
@@ -316,7 +311,7 @@ const AdminProperties = () => {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => handleDelete(property.id)}
-                                  className="text-red-600 hover:text-red-700"
+                                  className="text-destructive hover:text-destructive/80"
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>

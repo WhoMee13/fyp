@@ -22,6 +22,7 @@ import {
 import { UserCheck, UserX, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
+import { userRoleBadge, userStatusBadge } from '../lib/theme';
 
 interface User {
   id: string;
@@ -229,20 +230,12 @@ const AdminUsers = () => {
                               {user.phone || <span className="text-muted-foreground">No phone</span>}
                             </TableCell>
                             <TableCell>
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                user.role === 'ADMIN' 
-                                  ? 'bg-purple-100 text-purple-800' 
-                                  : 'bg-blue-100 text-blue-800'
-                              }`}>
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${userRoleBadge(user.role)}`}>
                                 {user.role}
                               </span>
                             </TableCell>
                             <TableCell>
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                user.status === 'ACTIVE'
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-red-100 text-red-800'
-                              }`}>
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${userStatusBadge(user.status)}`}>
                                 {user.status}
                               </span>
                             </TableCell>
@@ -255,7 +248,7 @@ const AdminUsers = () => {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleStatusChange(user.id, user.status)}
-                                className={user.status === 'ACTIVE' ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'}
+                                className={user.status === 'ACTIVE' ? 'text-destructive hover:text-destructive/80' : 'text-success hover:text-success/80'}
                               >
                                 {user.status === 'ACTIVE' ? (
                                   <>

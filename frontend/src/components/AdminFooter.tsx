@@ -14,8 +14,8 @@ const AdminFooter = () => {
             transition={{ duration: 0.6 }}
           >
             <div className="flex items-center space-x-3 mb-4">
-              <Shield className="h-6 w-6 text-purple-600" />
-              <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">
+              <Shield className="h-6 w-6 text-primary" />
+              <span className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
                 Admin Portal
               </span>
             </div>
@@ -33,25 +33,25 @@ const AdminFooter = () => {
             <h4 className="text-lg font-semibold mb-4">Admin Quick Links</h4>
             <ul className="space-y-3">
               <li>
-                <Link to="/admin" className="text-muted-foreground hover:text-purple-600 transition-colors flex items-center gap-2">
+                <Link to="/admin" className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2">
                   <Home className="h-4 w-4" />
                   Dashboard
                 </Link>
               </li>
               <li>
-                <Link to="/admin/users" className="text-muted-foreground hover:text-purple-600 transition-colors flex items-center gap-2">
+                <Link to="/admin/users" className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2">
                   <Users className="h-4 w-4" />
                   Manage Users
                 </Link>
               </li>
               <li>
-                <Link to="/admin/properties" className="text-muted-foreground hover:text-purple-600 transition-colors flex items-center gap-2">
+                <Link to="/admin/properties" className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2">
                   <Settings className="h-4 w-4" />
                   Manage Properties
                 </Link>
               </li>
               <li>
-                <Link to="/admin/profile" className="text-muted-foreground hover:text-purple-600 transition-colors flex items-center gap-2">
+                <Link to="/admin/profile" className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-2">
                   <Settings className="h-4 w-4" />
                   Profile Settings
                 </Link>

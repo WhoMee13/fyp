@@ -63,7 +63,7 @@ const PropertyCard = ({ property, index }: { property: Property; index: number }
     >
       <Link to={`/properties/${property.id}`}>
         <Card className="h-full border-2 hover:border-primary transition-all duration-300 overflow-hidden group cursor-pointer">
-          <div className="aspect-video bg-gray-200 overflow-hidden relative">
+          <div className="aspect-video bg-muted overflow-hidden relative">
             {property.images.length > 0 ? (
               <motion.img
                 src={`http://localhost:5000${property.images[0].imageUrl}`}
@@ -73,7 +73,7 @@ const PropertyCard = ({ property, index }: { property: Property; index: number }
                 transition={{ duration: 0.4 }}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gradient-to-br from-muted to-muted/50">
+              <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-muted">
                 <p>No Image</p>
               </div>
             )}

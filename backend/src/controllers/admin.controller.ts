@@ -459,6 +459,11 @@ export const approveVendorApplication = async (req: AuthRequest, res: Response) 
       }
     });
 
+    await prisma.user.update({
+      where: { id: profile.userId },
+      data: { role: 'VENDOR' }
+    });
+
     res.json({
       message: 'Vendor application approved successfully',
       profile

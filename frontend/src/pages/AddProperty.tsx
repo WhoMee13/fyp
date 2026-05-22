@@ -12,6 +12,7 @@ import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
+import { typeSectionClass, typeSectionTitleClass } from '../lib/theme';
 
 const propertySchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -302,8 +303,8 @@ const AddProperty = () => {
 
             {/* Dynamic fields based on property type */}
             {propertyType === 'Residential' && (
-              <div className="space-y-4 p-6 bg-blue-50 rounded-xl border-2 border-blue-200">
-                <h3 className="text-lg font-semibold text-blue-900">Residential Property Details</h3>
+              <div className={typeSectionClass('info')}>
+                <h3 className={typeSectionTitleClass('info')}>Residential Property Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <Label htmlFor="bhkType">BHK Type</Label>
@@ -347,8 +348,8 @@ const AddProperty = () => {
             )}
 
             {propertyType === 'Commercial' && (
-              <div className="space-y-4 p-6 bg-green-50 rounded-xl border-2 border-green-200">
-                <h3 className="text-lg font-semibold text-green-900">Commercial Property Details</h3>
+              <div className={typeSectionClass('success')}>
+                <h3 className={typeSectionTitleClass('success')}>Commercial Property Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="officeSpace">Office Space (sq ft)</Label>
@@ -377,8 +378,8 @@ const AddProperty = () => {
             )}
 
             {propertyType === 'Agricultural' && (
-              <div className="space-y-4 p-6 bg-yellow-50 rounded-xl border-2 border-yellow-200">
-                <h3 className="text-lg font-semibold text-yellow-900">Agricultural Property Details</h3>
+              <div className={typeSectionClass('warning')}>
+                <h3 className={typeSectionTitleClass('warning')}>Agricultural Property Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <Label htmlFor="soilType">Soil Type</Label>
@@ -493,7 +494,7 @@ const AddProperty = () => {
               />
               {images.length > 0 && (
                 <>
-                  <p className="text-sm text-gray-600 mt-2">{images.length} image(s) selected</p>
+                  <p className="text-sm text-muted-foreground mt-2">{images.length} image(s) selected</p>
                   <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
                     {imagePreviews.map((src, idx) => (
                       <div

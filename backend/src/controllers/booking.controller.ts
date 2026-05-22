@@ -13,11 +13,6 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    // Check if user is a vendor - vendors cannot book properties
-    if (req.user.role === 'VENDOR') {
-      return res.status(403).json({ error: 'Vendors cannot book properties' });
-    }
-
     const { propertyId, startDate, endDate } = req.body;
 
     if (!propertyId || !startDate) {

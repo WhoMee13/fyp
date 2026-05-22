@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, FormEvent } from 'react';
+import { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -9,6 +9,7 @@ import { Label } from '../components/ui/label';
 import { useAuth } from '../context/AuthContext';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
+import { statusBadgeClass } from '../lib/theme';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -16,24 +17,45 @@ const profileSchema = z.object({
   phone: z.string().optional(),
 });
 
-const passwordSchema = z.object({
-  currentPassword: z.string().min(1, 'Current password is required'),
-  newPassword: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string(),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().optional(),
+    newPassword: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  });
+
+const setPasswordSchema = z
+  .object({
+    newPassword: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
-type PasswordFormData = z.infer<typeof passwordSchema>;
+type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
+type SetPasswordFormData = z.infer<typeof setPasswordSchema>;
+
+const authProviderLabel: Record<string, string> = {
+  LOCAL: 'Email & password',
+  GOOGLE: 'Google',
+  BOTH: 'Google + password',
+};
 
 const Profile = () => {
   const { user, vendorStatus, refreshUser, isVendor, isAdmin } = useAuth();
   const [loading, setLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
 
-  // Vendor application states
+  const isGoogleOnly = user?.authProvider === 'GOOGLE' && !user?.hasPassword;
+  const usesGoogle = user?.authProvider === 'GOOGLE' || user?.authProvider === 'BOTH';
+
   const [citizenshipId, setCitizenshipId] = useState('');
   const [frontImage, setFrontImage] = useState<File | null>(null);
   const [backImage, setBackImage] = useState<File | null>(null);
@@ -44,6 +66,7 @@ const Profile = () => {
     register: registerProfile,
     handleSubmit: handleProfileSubmit,
     formState: { errors: profileErrors },
+    reset: resetProfile,
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
@@ -53,13 +76,32 @@ const Profile = () => {
     },
   });
 
+  useEffect(() => {
+    if (user) {
+      resetProfile({
+        name: user.name,
+        email: user.email,
+        phone: user.phone || '',
+      });
+    }
+  }, [user, resetProfile]);
+
   const {
     register: registerPassword,
     handleSubmit: handlePasswordSubmit,
     formState: { errors: passwordErrors },
     reset: resetPassword,
-  } = useForm<PasswordFormData>({
-    resolver: zodResolver(passwordSchema),
+  } = useForm<ChangePasswordFormData>({
+    resolver: zodResolver(changePasswordSchema),
+  });
+
+  const {
+    register: registerSetPassword,
+    handleSubmit: handleSetPasswordSubmit,
+    formState: { errors: setPasswordErrors },
+    reset: resetSetPassword,
+  } = useForm<SetPasswordFormData>({
+    resolver: zodResolver(setPasswordSchema),
   });
 
   const onProfileSubmit = async (data: ProfileFormData) => {
@@ -75,7 +117,7 @@ const Profile = () => {
     }
   };
 
-  const onPasswordSubmit = async (data: PasswordFormData) => {
+  const onPasswordSubmit = async (data: ChangePasswordFormData) => {
     try {
       setPasswordLoading(true);
       await api.put('/users/change-password', {
@@ -84,6 +126,7 @@ const Profile = () => {
       });
       toast.success('Password changed successfully');
       resetPassword();
+      refreshUser();
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to change password');
     } finally {
@@ -91,7 +134,22 @@ const Profile = () => {
     }
   };
 
-  // Vendor handlers
+  const onSetPasswordSubmit = async (data: SetPasswordFormData) => {
+    try {
+      setPasswordLoading(true);
+      await api.put('/users/change-password', {
+        newPassword: data.newPassword,
+      });
+      toast.success('Password set successfully');
+      resetSetPassword();
+      refreshUser();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to set password');
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
   const handleFileChange = (setter: (file: File | null) => void) => (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setter(e.target.files[0]);
@@ -117,7 +175,7 @@ const Profile = () => {
     try {
       setSubmitting(true);
       await api.post('/vendor/apply', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
       toast.success('Vendor application submitted');
       refreshUser();
@@ -142,10 +200,11 @@ const Profile = () => {
   };
 
   const renderVendorStatus = () => {
-    if (!vendorStatus) return <span className="text-gray-500 font-medium tracking-wide uppercase text-xs">Not Applied</span>;
-    if (vendorStatus === 'PENDING') return <span className="text-yellow-600 font-medium tracking-wide uppercase text-xs">Pending Review</span>;
-    if (vendorStatus === 'APPROVED') return <span className="text-green-600 font-medium tracking-wide uppercase text-xs">Approved Vendor</span>;
-    return <span className="text-red-600 font-medium tracking-wide uppercase text-xs">Rejected</span>;
+    const base = 'font-medium tracking-wide uppercase text-xs';
+    if (!vendorStatus) return <span className={`text-muted-foreground ${base}`}>Not Applied</span>;
+    if (vendorStatus === 'PENDING') return <span className={`text-warning ${base}`}>Pending Review</span>;
+    if (vendorStatus === 'APPROVED') return <span className={`text-success ${base}`}>Approved Vendor</span>;
+    return <span className={`text-destructive ${base}`}>Rejected</span>;
   };
 
   return (
@@ -155,8 +214,27 @@ const Profile = () => {
         <p className="text-muted-foreground">Manage your profile, security, and partnership status.</p>
       </div>
 
+      {/* Account overview */}
+      <Card className="border-2 mb-8">
+        <CardHeader>
+          <CardTitle className="text-lg">Sign-in method</CardTitle>
+          <CardDescription>How you access your account</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap items-center gap-3">
+          <span
+            className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusBadgeClass(usesGoogle ? 'info' : 'neutral')}`}
+          >
+            {authProviderLabel[user?.authProvider || 'LOCAL']}
+          </span>
+          {isGoogleOnly && (
+            <p className="text-sm text-muted-foreground">
+              Add a password below to also sign in with email, or complete your phone number for bookings.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-        {/* Profile Update */}
         <Card className="border-2 shadow-sm transition-all hover:shadow-md">
           <CardHeader>
             <CardTitle className="text-xl">Personal Information</CardTitle>
@@ -168,23 +246,36 @@ const Profile = () => {
                 <Label htmlFor="name" className="text-sm font-semibold">Full Name</Label>
                 <Input id="name" {...registerProfile('name')} className="mt-1.5" />
                 {profileErrors.name && (
-                  <p className="text-xs text-red-500 mt-1.5">{profileErrors.name.message}</p>
+                  <p className="text-xs text-destructive mt-1.5">{profileErrors.name.message}</p>
                 )}
               </div>
 
               <div>
                 <Label htmlFor="email" className="text-sm font-semibold">Email Address</Label>
-                <Input id="email" type="email" {...registerProfile('email')} className="mt-1.5" />
+                <Input
+                  id="email"
+                  type="email"
+                  {...registerProfile('email')}
+                  className="mt-1.5"
+                  disabled={user?.authProvider === 'GOOGLE'}
+                />
+                {user?.authProvider === 'GOOGLE' && (
+                  <p className="text-xs text-muted-foreground mt-1.5">
+                    Email is managed by Google for this account.
+                  </p>
+                )}
                 {profileErrors.email && (
-                  <p className="text-xs text-red-500 mt-1.5">{profileErrors.email.message}</p>
+                  <p className="text-xs text-destructive mt-1.5">{profileErrors.email.message}</p>
                 )}
               </div>
 
               <div>
-                <Label htmlFor="phone" className="text-sm font-semibold">Phone Number</Label>
+                <Label htmlFor="phone" className="text-sm font-semibold">
+                  Phone Number {isGoogleOnly && !user?.phone ? '(recommended)' : ''}
+                </Label>
                 <Input id="phone" type="tel" {...registerProfile('phone')} className="mt-1.5" />
                 {profileErrors.phone && (
-                  <p className="text-xs text-red-500 mt-1.5">{profileErrors.phone.message}</p>
+                  <p className="text-xs text-destructive mt-1.5">{profileErrors.phone.message}</p>
                 )}
               </div>
 
@@ -195,47 +286,88 @@ const Profile = () => {
           </CardContent>
         </Card>
 
-        {/* Change Password */}
         <Card className="border-2 shadow-sm transition-all hover:shadow-md">
           <CardHeader>
             <CardTitle className="text-xl">Security</CardTitle>
-            <CardDescription>Update your password to keep your account secure.</CardDescription>
+            <CardDescription>
+              {isGoogleOnly
+                ? 'Set a password to enable email sign-in alongside Google.'
+                : 'Update your password to keep your account secure.'}
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-5">
-              <div>
-                <Label htmlFor="currentPassword">Current Password</Label>
-                <Input id="currentPassword" type="password" {...registerPassword('currentPassword')} className="mt-1.5" />
-                {passwordErrors.currentPassword && (
-                  <p className="text-xs text-red-500 mt-1.5">{passwordErrors.currentPassword.message}</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="newPassword">New Password</Label>
-                <Input id="newPassword" type="password" {...registerPassword('newPassword')} className="mt-1.5" />
-                {passwordErrors.newPassword && (
-                  <p className="text-xs text-red-500 mt-1.5">{passwordErrors.newPassword.message}</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                <Input id="confirmPassword" type="password" {...registerPassword('confirmPassword')} className="mt-1.5" />
-                {passwordErrors.confirmPassword && (
-                  <p className="text-xs text-red-500 mt-1.5">{passwordErrors.confirmPassword.message}</p>
-                )}
-              </div>
-
-              <Button type="submit" disabled={passwordLoading} variant="outline" className="w-full sm:w-auto">
-                {passwordLoading ? 'Updating Password...' : 'Change Password'}
-              </Button>
-            </form>
+            {isGoogleOnly ? (
+              <form onSubmit={handleSetPasswordSubmit(onSetPasswordSubmit)} className="space-y-5">
+                <div>
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    {...registerSetPassword('newPassword')}
+                    className="mt-1.5"
+                  />
+                  {setPasswordErrors.newPassword && (
+                    <p className="text-xs text-destructive mt-1.5">{setPasswordErrors.newPassword.message}</p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    {...registerSetPassword('confirmPassword')}
+                    className="mt-1.5"
+                  />
+                  {setPasswordErrors.confirmPassword && (
+                    <p className="text-xs text-destructive mt-1.5">{setPasswordErrors.confirmPassword.message}</p>
+                  )}
+                </div>
+                <Button type="submit" disabled={passwordLoading} className="w-full sm:w-auto">
+                  {passwordLoading ? 'Setting password...' : 'Set password'}
+                </Button>
+              </form>
+            ) : (
+              <form onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-5">
+                <div>
+                  <Label htmlFor="currentPassword">Current Password</Label>
+                  <Input
+                    id="currentPassword"
+                    type="password"
+                    {...registerPassword('currentPassword')}
+                    className="mt-1.5"
+                  />
+                  {passwordErrors.currentPassword && (
+                    <p className="text-xs text-destructive mt-1.5">{passwordErrors.currentPassword.message}</p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <Input id="newPassword" type="password" {...registerPassword('newPassword')} className="mt-1.5" />
+                  {passwordErrors.newPassword && (
+                    <p className="text-xs text-destructive mt-1.5">{passwordErrors.newPassword.message}</p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    {...registerPassword('confirmPassword')}
+                    className="mt-1.5"
+                  />
+                  {passwordErrors.confirmPassword && (
+                    <p className="text-xs text-destructive mt-1.5">{passwordErrors.confirmPassword.message}</p>
+                  )}
+                </div>
+                <Button type="submit" disabled={passwordLoading} variant="outline" className="w-full sm:w-auto">
+                  {passwordLoading ? 'Updating Password...' : 'Change Password'}
+                </Button>
+              </form>
+            )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Become Vendor Section - Only for Customers or Pending Vendors */}
       {!isAdmin && !isVendor && (
         <Card className="border-2 border-primary/20 bg-primary/5 shadow-sm overflow-hidden mb-8">
           <CardHeader className="border-b bg-muted/30">
@@ -253,7 +385,7 @@ const Profile = () => {
           <CardContent className="pt-8">
             {vendorStatus === 'APPROVED' ? (
               <div className="text-center py-6">
-                <p className="text-lg font-medium text-green-700">You are an approved vendor!</p>
+                <p className="text-lg font-medium text-success">You are an approved vendor!</p>
                 <p className="text-muted-foreground mt-1">You can now add and manage properties.</p>
               </div>
             ) : (
@@ -272,10 +404,11 @@ const Profile = () => {
                       />
                     </div>
                     <p className="text-sm text-muted-foreground pt-2">
-                      Please provide valid details. Your application will be reviewed by an administrator within 24-48 hours.
+                      Please provide valid details. Your application will be reviewed by an administrator within 24-48
+                      hours.
                     </p>
                   </div>
-                  
+
                   <div className="space-y-5">
                     <div>
                       <Label className="text-sm font-semibold">Identity Verification</Label>
@@ -304,23 +437,23 @@ const Profile = () => {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="pt-2 flex flex-col gap-3">
-                      <Button
-                        type="submit"
-                        disabled={submitting || vendorStatus === 'PENDING'}
-                        className="w-full"
-                      >
-                        {submitting ? 'Submitting Application...' : vendorStatus === 'REJECTED' ? 'Resubmit Application' : 'Apply to Become Vendor'}
+                      <Button type="submit" disabled={submitting || vendorStatus === 'PENDING'} className="w-full">
+                        {submitting
+                          ? 'Submitting Application...'
+                          : vendorStatus === 'REJECTED'
+                          ? 'Resubmit Application'
+                          : 'Apply to Become Vendor'}
                       </Button>
-                      
+
                       {vendorStatus === 'PENDING' && (
                         <Button
                           type="button"
                           variant="ghost"
                           disabled={cancelling}
                           onClick={handleVendorCancel}
-                          className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="w-full text-destructive hover:text-destructive/80 hover:bg-destructive/10"
                         >
                           {cancelling ? 'Cancelling...' : 'Cancel Application'}
                         </Button>
@@ -338,4 +471,3 @@ const Profile = () => {
 };
 
 export default Profile;
-

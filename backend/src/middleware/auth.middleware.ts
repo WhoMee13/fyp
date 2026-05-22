@@ -51,6 +51,42 @@ export const authenticate = async (
   }
 };
 
+/** Attach user when a valid token is present; continue anonymously otherwise */
+export const optionalAuthenticate = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const token = req.cookies.token;
+    if (!token) {
+      return next();
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      id: string;
+      email: string;
+      role: string;
+    };
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: { id: true, email: true, role: true, status: true }
+    });
+
+    if (user && user.status !== 'INACTIVE') {
+      req.user = {
+        id: user.id,
+        email: user.email,
+        role: user.role
+      };
+    }
+  } catch {
+    // Invalid token — treat as guest
+  }
+  next();
+};
+
 export const authorize = (...roles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
