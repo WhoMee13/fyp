@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { Badge } from '../components/ui/badge';
-import { Calendar, Phone, MessageCircle, MapPin, Home, User, Clock } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -44,13 +42,19 @@ interface Booking {
   vendor: BookingVendor;
 }
 
+const formatBookingDates = (booking: Booking) => {
+  const start = new Date(booking.startDate).toLocaleDateString();
+  if (booking.type === 'PURCHASE' || !booking.endDate) {
+    return start;
+  }
+  return `${start} - ${new Date(booking.endDate).toLocaleDateString()}`;
+};
+
 const MyBookings = () => {
   const { loading } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [fetching, setFetching] = useState(true);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [showContactModal, setShowContactModal] = useState(false);
 
   useEffect(() => {
     fetchBookings();
@@ -81,33 +85,26 @@ const MyBookings = () => {
     }
   };
 
-  const handleContact = (booking: Booking) => {
-    setSelectedBooking(booking);
-    setShowContactModal(true);
-  };
-
-  const handleWhatsAppContact = (phone: string, booking: Booking) => {
-    const message = encodeURIComponent(
-      `Hello ${booking.vendor.name}, I'm interested in your property "${booking.property.title}" (Booking ID: ${booking.id}). Let's discuss further details.`
-    );
-    window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${message}`, '_blank');
-  };
-
-  const handlePhoneCall = (phone: string) => {
-    window.open(`tel:${phone}`, '_blank');
-  };
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex items-center justify-center min-h-screen"
+      >
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+      </motion.div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      <div className="container mx-auto px-4 py-12">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="container mx-auto px-4 py-12"
+      >
         <Card className="border-2">
           <CardHeader>
             <CardTitle className="text-2xl">My Bookings</CardTitle>
@@ -124,16 +121,32 @@ const MyBookings = () => {
             ) : bookings.length === 0 ? (
               <p className="text-muted-foreground">You have no bookings yet.</p>
             ) : (
-              <div className="space-y-4">
-                {bookings.map((booking, index) => (
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: {
+                    opacity: 1,
+                    transition: { staggerChildren: 0.05 },
+                  },
+                }}
+                className="space-y-4"
+              >
+                {bookings.map((booking) => (
                   <motion.div
                     key={booking.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
+                    variants={{
+                      hidden: { opacity: 0, y: 10 },
+                      visible: { opacity: 1, y: 0 },
+                    }}
                     className="border rounded-lg p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
                   >
-                    <div className="flex items-center gap-4">
+                    <motion.div
+                      whileHover={{ x: 4 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                      className="flex items-center gap-4"
+                    >
                       {booking.property.images[0] && (
                         <img
                           src={`http://localhost:5000${booking.property.images[0].imageUrl}`}
@@ -143,10 +156,7 @@ const MyBookings = () => {
                       )}
                       <div>
                         <h3 className="font-semibold text-lg">{booking.property.title}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(booking.startDate).toLocaleDateString()} -{' '}
-                          {new Date(booking.endDate).toLocaleDateString()}
-                        </p>
+                        <p className="text-sm text-muted-foreground">{formatBookingDates(booking)}</p>
                         <p className="text-sm">
                           Status:{' '}
                           <span className="font-medium">
@@ -154,8 +164,8 @@ const MyBookings = () => {
                           </span>
                         </p>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
+                    </motion.div>
+                    <motion.div whileTap={{ scale: 0.98 }}>
                       <Button
                         variant="outline"
                         disabled={
@@ -167,17 +177,16 @@ const MyBookings = () => {
                       >
                         {cancellingId === booking.id ? 'Cancelling...' : 'Cancel Booking'}
                       </Button>
-                    </div>
+                    </motion.div>
                   </motion.div>
                 ))}
-              </div>
+              </motion.div>
             )}
           </CardContent>
         </Card>
-      </div>
+      </motion.div>
     </div>
   );
 };
 
 export default MyBookings;
-

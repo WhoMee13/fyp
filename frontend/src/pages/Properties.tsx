@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../compone
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Search, MapPin, Ruler, DollarSign, Filter } from 'lucide-react';
+import { Search, MapPin, Ruler, Filter } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
 

@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+// import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { LocationProvider } from './context/LocationContext';
 import Home from './pages/Home';

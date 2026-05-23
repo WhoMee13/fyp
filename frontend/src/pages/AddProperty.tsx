@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
-import L, { LatLngExpression } from 'leaflet';
+import L, { LatLngExpression, LeafletMouseEvent } from 'leaflet';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -91,8 +91,8 @@ const AddProperty = () => {
   });
 
   const propertyType = watch('propertyType');
-  const hasParking = watch('hasParking');
-  const waterAccess = watch('waterAccess');
+  // const hasParking = watch('hasParking');
+  // const waterAccess = watch('waterAccess');
 
   const latitude = watch('latitude');
   const longitude = watch('longitude');
@@ -102,9 +102,9 @@ const AddProperty = () => {
 
   const LocationMarker = () => {
     useMapEvents({
-      async click(e) {
-        const lat = parseFloat(e.latlng.lat).toFixed(4);
-        const lng = parseFloat(e.latlng.lng).toFixed(4);
+      async click(e: LeafletMouseEvent) {
+        const lat = parseFloat(e.latlng.lat.toFixed(4));
+        const lng = parseFloat(e.latlng.lng.toFixed(4));
         setValue('latitude', lat.toString(), { shouldValidate: true });
         setValue('longitude', lng.toString(), { shouldValidate: true });
 

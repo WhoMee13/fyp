@@ -30,12 +30,12 @@ const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { settings } = useSettings();
-useEffect(()=>{
-    const favicon = document.querySelector("link[rel~='icon']");;
-    if(favicon && settings?.logo){
+useEffect(() => {
+    const favicon = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
+    if (favicon && settings?.logo) {
       favicon.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${settings.logo}`;
     }
-  },[settings])
+  }, [settings]);
   const menuItems = [
     { title: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
     { title: 'Properties', icon: Building2, path: '/admin/properties' },

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet';
-import L, { LatLngExpression } from 'leaflet';
+import L, { LatLngExpression, LeafletMouseEvent } from 'leaflet';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -69,7 +69,7 @@ const FindOnMap = () => {
 
   const LocationMarker = () => {
     useMapEvents({
-      click(e) {
+      click(e: LeafletMouseEvent) {
         setCenter([e.latlng.lat, e.latlng.lng]);
         fetchNearby(e.latlng.lat, e.latlng.lng);
       },

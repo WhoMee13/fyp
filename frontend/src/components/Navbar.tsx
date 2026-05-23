@@ -13,12 +13,12 @@ const Navbar = () => {
   const { settings } = useSettings();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  useEffect(()=>{
-    const favicon = document.querySelector("link[rel~='icon']");;
-    if(favicon && settings?.logo){
+  useEffect(() => {
+    const favicon = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
+    if (favicon && settings?.logo) {
       favicon.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${settings.logo}`;
     }
-  },[settings])
+  }, [settings]);
   const handleLogout = async () => {
     await logout();
     navigate('/');

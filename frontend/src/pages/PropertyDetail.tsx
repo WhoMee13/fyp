@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { MapPin, Ruler, DollarSign, User, Mail, Phone, ArrowLeft } from 'lucide-react';
+import { MapPin, Ruler, DollarSign, ArrowLeft } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -48,8 +48,6 @@ const PropertyDetail = () => {
   const { isAuthenticated, user } = useAuth();
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
-  const [contactMessage, setContactMessage] = useState('');
-  const [sending, setSending] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const [bookingStartDate, setBookingStartDate] = useState('');
   const [bookingEndDate, setBookingEndDate] = useState('');
@@ -68,35 +66,6 @@ const PropertyDetail = () => {
       navigate('/properties');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleContact = async () => {
-    if (!isAuthenticated) {
-      toast.error('Please login to contact owner');
-      navigate('/login');
-      return;
-    }
-
-    if (property && user?.id === property.owner.id) {
-      toast.error('You cannot contact yourself about your own property');
-      return;
-    }
-
-    if (!contactMessage.trim()) {
-      toast.error('Please enter a message');
-      return;
-    }
-
-    try {
-      setSending(true);
-      await api.post(`/properties/${id}/contact`, { message: contactMessage });
-      toast.success('Contact request sent successfully');
-      setContactMessage('');
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to send message');
-    } finally {
-      setSending(false);
     }
   };
 

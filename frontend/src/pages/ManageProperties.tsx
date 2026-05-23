@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { Edit, Trash2, Eye } from 'lucide-react';
+import { Trash2, Eye } from 'lucide-react';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
 import { propertyStatusBadge, statusBadgeClass } from '../lib/theme';
