@@ -12,6 +12,7 @@ import geoRoutes from './routes/geo.routes';
 import vendorRoutes from './routes/vendor.routes';
 import bookingRoutes from './routes/booking.routes';
 import siteSettingsRoutes from './routes/siteSettings.routes';
+import { PrismaClient } from '@prisma/client';
 
 dotenv.config();
 
@@ -45,7 +46,26 @@ app.use('/api/settings', siteSettingsRoutes);
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
 });
-
+const prisma = new PrismaClient()
+// In src/index.ts or a test controller
+app.get('/api/db-test', async (req, res) => {
+  try {
+    const result = await prisma.$queryRaw`SELECT NOW() as current_time`;
+    res.json({
+      success: true,
+      message: "✅ Database connected successfully",
+      time: result
+    });
+  } catch (error: any) {
+    console.error("DB Test Error:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      code: error.code,
+      meta: error.meta
+    });
+  }
+});
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
