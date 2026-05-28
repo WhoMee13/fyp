@@ -197,7 +197,7 @@ const AddProperty = () => {
       toast.success('Property added successfully! Waiting for admin approval.');
       navigate('/properties/manage');
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to add property');
+      // Handled globally
     } finally {
       setLoading(false);
     }

@@ -66,7 +66,7 @@ const MyBookings = () => {
       const response = await api.get('/bookings/my');
       setBookings(response.data.bookings);
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to load bookings');
+      // Handled globally
     } finally {
       setFetching(false);
     }
@@ -79,7 +79,7 @@ const MyBookings = () => {
       toast.success('Booking cancelled successfully');
       fetchBookings();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to cancel booking');
+      // Handled globally
     } finally {
       setCancellingId(null);
     }

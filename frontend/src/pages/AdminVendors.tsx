@@ -67,7 +67,7 @@ const AdminVendors = () => {
       setApplications(response.data.applications);
       setPagination(response.data.pagination);
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to load vendor applications');
+      // Handled globally
     } finally {
       setLoading(false);
     }
@@ -84,7 +84,7 @@ const AdminVendors = () => {
       toast.success(`Application ${action}d`);
       fetchApplications();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to update application');
+      // Handled globally
     } finally {
       setUpdatingId(null);
     }

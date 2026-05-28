@@ -51,7 +51,7 @@ const VendorBookings = () => {
       const response = await api.get('/bookings/vendor');
       setBookings(response.data.bookings);
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to load bookings');
+      // Handled globally
     } finally {
       setFetching(false);
     }
@@ -64,7 +64,7 @@ const VendorBookings = () => {
       toast.success('Booking cancelled successfully');
       fetchBookings();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to cancel booking');
+      // Handled globally
     } finally {
       setCancellingId(null);
     }
@@ -77,7 +77,7 @@ const VendorBookings = () => {
       toast.success('Booking approved successfully');
       fetchBookings();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to approve booking');
+      // Handled globally
     } finally {
       setApprovingId(null);
     }

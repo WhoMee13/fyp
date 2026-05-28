@@ -72,38 +72,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = async (email: string, password: string) => {
-    try {
-      const response = await api.post('/auth/login', { email, password });
-      setUser(response.data.user);
-      toast.success('Login successful');
-      return response.data.user;
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Login failed');
-      throw error;
-    }
+    const response = await api.post('/auth/login', { email, password });
+    setUser(response.data.user);
+    toast.success('Login successful');
+    return response.data.user;
   };
 
   const loginWithGoogle = async (credential: string) => {
-    try {
-      const response = await api.post('/auth/google', { credential });
-      setUser(response.data.user);
-      toast.success('Signed in with Google');
-      return response.data.user;
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Google sign-in failed');
-      throw error;
-    }
+    const response = await api.post('/auth/google', { credential });
+    setUser(response.data.user);
+    toast.success('Signed in with Google');
+    return response.data.user;
   };
 
   const register = async (name: string, email: string, password: string, phone?: string) => {
-    try {
-      const response = await api.post('/auth/register', { name, email, password, phone });
-      setUser(response.data.user);
-      toast.success('Registration successful');
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Registration failed');
-      throw error;
-    }
+    const response = await api.post('/auth/register', { name, email, password, phone });
+    setUser(response.data.user);
+    toast.success('Registration successful');
   };
 
   const logout = async () => {
@@ -112,7 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       toast.success('Logged out successfully');
     } catch (error: any) {
-      toast.error('Logout failed');
+      setUser(null); // Force log out locally even if API fails
     }
   };
 

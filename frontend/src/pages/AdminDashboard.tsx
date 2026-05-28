@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Users, Package, CheckCircle, Clock, ArrowRight } from 'lucide-react';
 import api from '../lib/api';
-import toast from 'react-hot-toast';
 import { propertyStatusBadge, statIconColors } from '../lib/theme';
 
 const AdminDashboard = () => {
@@ -27,7 +26,7 @@ const AdminDashboard = () => {
       setStats(response.data.stats);
       setRecentProperties(response.data.recentProperties);
     } catch (error: any) {
-      toast.error('Failed to load dashboard data');
+      // Handled globally
     } finally {
       setLoading(false);
     }

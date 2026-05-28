@@ -30,7 +30,7 @@ const ManageProperties = () => {
       const response = await api.get('/properties/user/my-properties');
       setProperties(response.data.properties);
     } catch (error: any) {
-      toast.error('Failed to load properties');
+      // Handled globally
     } finally {
       setLoading(false);
     }
@@ -44,7 +44,7 @@ const ManageProperties = () => {
       toast.success('Property deleted successfully');
       fetchProperties();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to delete property');
+      // Handled globally
     }
   };
 

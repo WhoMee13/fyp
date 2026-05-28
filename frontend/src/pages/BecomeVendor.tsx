@@ -52,7 +52,7 @@ const BecomeVendor = () => {
       toast.success(response.data.message || 'Vendor application submitted');
       await refreshUser();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to submit application');
+      // Handled globally
     } finally {
       setSubmitting(false);
     }
@@ -65,7 +65,7 @@ const BecomeVendor = () => {
       toast.success(response.data.message || 'Vendor application cancelled');
       await refreshUser();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to cancel application');
+      // Handled globally
     } finally {
       setCancelling(false);
     }

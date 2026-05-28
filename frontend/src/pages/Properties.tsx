@@ -7,7 +7,6 @@ import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Search, MapPin, Ruler, Filter } from 'lucide-react';
 import api from '../lib/api';
-import toast from 'react-hot-toast';
 
 interface Property {
   id: string;
@@ -149,7 +148,7 @@ const Properties = () => {
       setProperties(response.data.properties);
       setPagination(response.data.pagination);
     } catch (error: any) {
-      toast.error('Failed to load properties');
+      // Handled globally
     } finally {
       setLoading(false);
     }

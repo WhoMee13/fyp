@@ -13,6 +13,7 @@ import vendorRoutes from './routes/vendor.routes';
 import bookingRoutes from './routes/booking.routes';
 import siteSettingsRoutes from './routes/siteSettings.routes';
 import { PrismaClient } from '@prisma/client';
+import { errorHandler } from './middleware/errorHandler';
 
 dotenv.config();
 
@@ -25,8 +26,8 @@ app.use(cors({
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
 app.use('/public', express.static(path.join(__dirname, '../public')));
 
@@ -67,6 +68,19 @@ app.get('/api/db-test', async (req, res) => {
     });
   }
 });
+
+// Global error handling middleware (must be registered after all routes and handlers)
+app.use(errorHandler);
+
+// Process-level exception listeners to prevent server crashes
+process.on('uncaughtException', (error) => {
+  console.error('CRITICAL: Uncaught Exception occurred:', error);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('CRITICAL: Unhandled Promise Rejection at:', promise, 'reason:', reason);
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });

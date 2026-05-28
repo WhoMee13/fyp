@@ -111,7 +111,7 @@ const Profile = () => {
       toast.success('Profile updated successfully');
       refreshUser();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to update profile');
+      // Handled globally
     } finally {
       setLoading(false);
     }
@@ -128,7 +128,7 @@ const Profile = () => {
       resetPassword();
       refreshUser();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to change password');
+      // Handled globally
     } finally {
       setPasswordLoading(false);
     }
@@ -144,7 +144,7 @@ const Profile = () => {
       resetSetPassword();
       refreshUser();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to set password');
+      // Handled globally
     } finally {
       setPasswordLoading(false);
     }
@@ -180,7 +180,7 @@ const Profile = () => {
       toast.success('Vendor application submitted');
       refreshUser();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to submit application');
+      // Handled globally
     } finally {
       setSubmitting(false);
     }
@@ -193,7 +193,7 @@ const Profile = () => {
       toast.success('Vendor application cancelled');
       refreshUser();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to cancel application');
+      // Handled globally
     } finally {
       setCancelling(false);
     }

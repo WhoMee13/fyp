@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-// import { Toaster } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { LocationProvider } from './context/LocationContext';
 import Home from './pages/Home';
@@ -36,137 +36,138 @@ const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 function App() {
   return (
     <ThemeProvider>
+      <Toaster position="bottom-right" reverseOrder={false} />
       <GoogleOAuthProvider clientId={googleClientId}>
-      <AuthProvider>
-        <SettingsProvider>
-          <LocationProvider>
-        <Router>
-          <ScrollToTop />
-          <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="properties" element={<Properties />} />
-            <Route path="properties/:id" element={<PropertyDetail />} />
-            <Route path="find" element={<FindOnMap />} />
-            <Route path="login" element={<Login />} />
-            <Route path="register" element={<Register />} />
-            
-            {/* Protected user routes */}
-            <Route
-              path="dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="become-vendor"
-              element={
-                <ProtectedRoute>
-                  <BecomeVendor />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="properties/add"
-              element={
-                <VendorRoute>
-                  <AddProperty />
-                </VendorRoute>
-              }
-            />
-            <Route
-              path="properties/manage"
-              element={
-                <VendorRoute>
-                  <ManageProperties />
-                </VendorRoute>
-              }
-            />
-            <Route
-              path="vendor-bookings"
-              element={
-                <VendorRoute>
-                  <VendorBookings />
-                </VendorRoute>
-              }
-            />
-            <Route
-              path="profile"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="my-bookings"
-              element={
-                <ProtectedRoute>
-                  <MyBookings />
-                </ProtectedRoute>
-              }
-            />
-          </Route>
+        <AuthProvider>
+          <SettingsProvider>
+            <LocationProvider>
+              <Router>
+                <ScrollToTop />
+                <Routes>
+                  {/* Public routes */}
+                  <Route path="/" element={<Layout />}>
+                    <Route index element={<Home />} />
+                    <Route path="properties" element={<Properties />} />
+                    <Route path="properties/:id" element={<PropertyDetail />} />
+                    <Route path="find" element={<FindOnMap />} />
+                    <Route path="login" element={<Login />} />
+                    <Route path="register" element={<Register />} />
 
-          {/* Admin routes with separate layout */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route
-              index
-              element={
-                <AdminRoute>
-                  <AdminDashboard />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="properties"
-              element={
-                <AdminRoute>
-                  <AdminProperties />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="users"
-              element={
-                <AdminRoute>
-                  <AdminUsers />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="vendors"
-              element={
-                <AdminRoute>
-                  <AdminVendors />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="profile"
-              element={
-                <AdminRoute>
-                  <AdminProfile />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="settings"
-              element={
-                <AdminRoute>
-                  <AdminSettings />
-                </AdminRoute>
-              }
-            />
-          </Route>
-          </Routes>
-        </Router>
-      </LocationProvider>
-      </SettingsProvider>
-    </AuthProvider>
+                    {/* Protected user routes */}
+                    <Route
+                      path="dashboard"
+                      element={
+                        <ProtectedRoute>
+                          <Dashboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="become-vendor"
+                      element={
+                        <ProtectedRoute>
+                          <BecomeVendor />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="properties/add"
+                      element={
+                        <VendorRoute>
+                          <AddProperty />
+                        </VendorRoute>
+                      }
+                    />
+                    <Route
+                      path="properties/manage"
+                      element={
+                        <VendorRoute>
+                          <ManageProperties />
+                        </VendorRoute>
+                      }
+                    />
+                    <Route
+                      path="vendor-bookings"
+                      element={
+                        <VendorRoute>
+                          <VendorBookings />
+                        </VendorRoute>
+                      }
+                    />
+                    <Route
+                      path="profile"
+                      element={
+                        <ProtectedRoute>
+                          <Profile />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="my-bookings"
+                      element={
+                        <ProtectedRoute>
+                          <MyBookings />
+                        </ProtectedRoute>
+                      }
+                    />
+                  </Route>
+
+                  {/* Admin routes with separate layout */}
+                  <Route path="/admin" element={<AdminLayout />}>
+                    <Route
+                      index
+                      element={
+                        <AdminRoute>
+                          <AdminDashboard />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="properties"
+                      element={
+                        <AdminRoute>
+                          <AdminProperties />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="users"
+                      element={
+                        <AdminRoute>
+                          <AdminUsers />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="vendors"
+                      element={
+                        <AdminRoute>
+                          <AdminVendors />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="profile"
+                      element={
+                        <AdminRoute>
+                          <AdminProfile />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="settings"
+                      element={
+                        <AdminRoute>
+                          <AdminSettings />
+                        </AdminRoute>
+                      }
+                    />
+                  </Route>
+                </Routes>
+              </Router>
+            </LocationProvider>
+          </SettingsProvider>
+        </AuthProvider>
       </GoogleOAuthProvider>
     </ThemeProvider>
   );

@@ -76,7 +76,7 @@ const AdminProperties = () => {
       setProperties(response.data.properties);
       setPagination(response.data.pagination);
     } catch (error: any) {
-      toast.error('Failed to load properties');
+      // Handled globally
     } finally {
       setLoading(false);
     }
@@ -88,7 +88,7 @@ const AdminProperties = () => {
       toast.success('Property approved');
       fetchProperties();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to approve property');
+      // Handled globally
     }
   };
 
@@ -98,7 +98,7 @@ const AdminProperties = () => {
       toast.success('Property rejected');
       fetchProperties();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to reject property');
+      // Handled globally
     }
   };
 
@@ -110,7 +110,7 @@ const AdminProperties = () => {
       toast.success('Property deleted');
       fetchProperties();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to delete property');
+      // Handled globally
     }
   };
 

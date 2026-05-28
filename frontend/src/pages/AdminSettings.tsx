@@ -76,7 +76,7 @@ const AdminSettings = () => {
       toast.success('Site settings updated successfully');
       await refreshSettings();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to update settings');
+      // Handled globally
     } finally {
       setLoading(false);
     }

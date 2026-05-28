@@ -88,7 +88,7 @@ const AdminProfile = () => {
       toast.success('Profile updated successfully');
       window.location.reload();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to update profile');
+      // Handled globally
     } finally {
       setLoading(false);
     }
@@ -104,7 +104,7 @@ const AdminProfile = () => {
       toast.success('Password changed successfully');
       resetPassword();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to change password');
+      // Handled globally
     } finally {
       setPasswordLoading(false);
     }

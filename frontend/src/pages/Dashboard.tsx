@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button';
 import { Plus, Package, CheckCircle, XCircle, ArrowRight } from 'lucide-react';
 import api from '../lib/api';
-import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { propertyStatusBadge, statIconColors } from '../lib/theme';
 
@@ -45,7 +44,7 @@ const Dashboard = () => {
         pending: props.filter((p: Property) => p.status === 'PENDING').length,
       });
     } catch (error: any) {
-      toast.error('Failed to load properties');
+      // Handled globally
     } finally {
       setLoading(false);
     }

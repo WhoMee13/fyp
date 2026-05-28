@@ -3,15 +3,15 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { SearchInput } from '../components/ui/search';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '../components/ui/table';
-import { 
+import {
   Pagination,
   PaginationContent,
   PaginationItem,
@@ -66,7 +66,7 @@ const AdminUsers = () => {
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
       });
-      
+
       if (searchTerm) params.append('search', searchTerm);
       if (statusFilter) params.append('status', statusFilter);
       if (roleFilter) params.append('role', roleFilter);
@@ -75,7 +75,7 @@ const AdminUsers = () => {
       setUsers(response.data.users);
       setPagination(response.data.pagination);
     } catch (error: any) {
-      toast.error('Failed to load users');
+      // Handled globally
     } finally {
       setLoading(false);
     }
@@ -83,13 +83,13 @@ const AdminUsers = () => {
 
   const handleStatusChange = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-    
+
     try {
       await api.put(`/admin/users/${id}/status`, { status: newStatus });
       toast.success(`User ${newStatus.toLowerCase()}`);
       fetchUsers();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to update user status');
+      // Handled globally
     }
   };
 
@@ -101,7 +101,7 @@ const AdminUsers = () => {
       toast.success(`User role updated to ${newRole.toLowerCase()}`);
       fetchUsers();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to update user role');
+      // Handled globally
     }
   };
 
@@ -159,7 +159,8 @@ const AdminUsers = () => {
                     className="px-4 py-2 border-2 border-input rounded-lg bg-background focus:border-primary focus:outline-none"
                   >
                     <option value="">All Roles</option>
-                    <option value="USER">User</option>
+                    <option value="CUSTOMER">Customer</option>
+                    <option value="VENDOR">Vendor</option>
                     <option value="ADMIN">Admin</option>
                   </select>
                 </div>
@@ -298,7 +299,7 @@ const AdminUsers = () => {
                               disabled={pagination.page === 1}
                             />
                           </PaginationItem>
-                          
+
                           {Array.from({ length: pagination.pages }, (_, i) => i + 1).map((page) => (
                             <PaginationItem key={page}>
                               <PaginationLink
@@ -309,7 +310,7 @@ const AdminUsers = () => {
                               </PaginationLink>
                             </PaginationItem>
                           ))}
-                          
+
                           <PaginationItem>
                             <PaginationNext
                               onClick={() => handlePageChange(pagination.page + 1)}

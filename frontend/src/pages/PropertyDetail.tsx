@@ -62,7 +62,6 @@ const PropertyDetail = () => {
       const response = await api.get(`/properties/${id}`);
       setProperty(response.data.property);
     } catch (error: any) {
-      toast.error('Property not found');
       navigate('/properties');
     } finally {
       setLoading(false);
@@ -107,7 +106,7 @@ const PropertyDetail = () => {
       setBookingEndDate('');
       fetchProperty(); // Refresh bookings to update UI
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to create booking');
+      // Handled globally
     } finally {
       setBookingLoading(false);
     }
@@ -195,9 +194,8 @@ const PropertyDetail = () => {
                     <motion.button
                       key={index}
                       onClick={() => setSelectedImage(index)}
-                      className={`aspect-video rounded-lg overflow-hidden border-2 ${
-                        selectedImage === index ? 'border-primary' : 'border-transparent'
-                      }`}
+                      className={`aspect-video rounded-lg overflow-hidden border-2 ${selectedImage === index ? 'border-primary' : 'border-transparent'
+                        }`}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
@@ -378,10 +376,8 @@ const PropertyDetail = () => {
                       <Button
                         onClick={() => {
                           if (property.purpose === 'Sale') {
-                            if (window.confirm('Are you sure you want to buy this property? A booking confirmation will be requested.')) {
-                              const today = new Date().toISOString().split('T')[0];
-                              handleBooking(today, undefined);
-                            }
+                            const today = new Date().toISOString().split('T')[0];
+                            handleBooking(today, undefined);
                           } else {
                             handleBooking(bookingStartDate, bookingEndDate);
                           }
@@ -390,8 +386,8 @@ const PropertyDetail = () => {
                         className="w-full h-12 text-lg font-semibold"
                         size="lg"
                       >
-                        {bookingLoading 
-                          ? (property.purpose === 'Sale' ? 'Processing...' : 'Booking...') 
+                        {bookingLoading
+                          ? (property.purpose === 'Sale' ? 'Processing...' : 'Booking...')
                           : (property.purpose === 'Sale' ? 'Buy Now' : 'Book Now')}
                       </Button>
                     )}
